@@ -97,10 +97,11 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  const up = join(process.cwd(), 'uploads', 'avatars');
+  const uploadsRoot = process.env.VERCEL ? join('/tmp', 'uploads') : join(process.cwd(), 'uploads');
+  const up = join(uploadsRoot, 'avatars');
   fs.mkdirSync(up, { recursive: true });
 
-  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+  app.useStaticAssets(uploadsRoot, { prefix: '/uploads' });
 
   const host = config.get<string>('HOST') ?? '0.0.0.0';
   const port = Number(config.get<string>('PORT') ?? 4001);

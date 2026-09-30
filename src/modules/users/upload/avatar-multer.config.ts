@@ -3,7 +3,9 @@ import * as path from 'node:path';
 import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 
-const dest = path.resolve(process.cwd(), 'uploads/avatars');
+const dest = process.env.VERCEL
+  ? path.join('/tmp', 'uploads', 'avatars')
+  : path.resolve(process.cwd(), 'uploads/avatars');
 if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
 
 export const avatarMulterConfig = {
