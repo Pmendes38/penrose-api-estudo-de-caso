@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: penrose-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
