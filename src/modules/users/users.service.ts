@@ -28,6 +28,26 @@ export class UsersService {
     private readonly auth: AuthService,
   ) {}
 
+  async listAdminCustomers() {
+    // ponytail: consulta completa para segmentação local; paginar no banco quando a base crescer.
+    const [profiles, orderStats] = await Promise.all([this.repo.listAdminProfiles(), this.repo.listAdminOrderStats()]);
+    const byCustomer = new Map(orderStats.map(stats => [stats._id, stats]));
+    return profiles.map(profile => {
+      const stats = byCustomer.get(profile.id);
+      return {
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone ?? null,
+        createdAt: profile.createdAt ?? null,
+        totalOrders: stats?.totalOrders ?? 0,
+        paidOrders: stats?.paidOrders ?? 0,
+        totalSpent: stats?.totalSpent ?? 0,
+        lastOrder: stats?.lastOrder ?? null,
+      };
+    });
+  }
+
   /* ------------ Perfil básico ------------- */
   async getMe(userId: string) {
     const u = await this.repo.findById(userId);

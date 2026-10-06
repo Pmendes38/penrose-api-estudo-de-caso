@@ -2,10 +2,30 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Customer, CustomerDocument } from '../../auth/schemas/customer.schema';
+import { Order, OrderDocument } from '../../orders/schemas/order.schema';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectModel(Customer.name) private readonly model: Model<CustomerDocument>) {}
+  constructor(
+    @InjectModel(Customer.name) private readonly model: Model<CustomerDocument>,
+    @InjectModel(Order.name) private readonly orders: Model<OrderDocument>,
+  ) {}
+
+  listAdminProfiles() {
+    return this.model.find({}, { _id: 0, id: 1, name: 1, email: 1, phone: 1, createdAt: 1 }).sort({ createdAt: -1 }).lean().exec();
+  }
+
+  listAdminOrderStats() {
+    return this.orders.aggregate<{ _id: string; totalOrders: number; paidOrders: number; totalSpent: number; lastOrder: Date | null }>([
+      { $group: {
+        _id: '$customerId',
+        totalOrders: { $sum: 1 },
+        paidOrders: { $sum: { $cond: [{ $in: ['$status', ['paid', 'shipped', 'delivered']] }, 1, 0] } },
+        totalSpent: { $sum: { $cond: [{ $in: ['$status', ['paid', 'shipped', 'delivered']] }, '$grandTotal', 0] } },
+        lastOrder: { $max: { $cond: [{ $in: ['$status', ['paid', 'shipped', 'delivered']] }, '$createdAt', null] } },
+      } },
+    ]).exec();
+  }
 
   findById(id: string) {
     return this.model.findOne({ id }).lean().exec();

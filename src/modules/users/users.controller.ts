@@ -11,12 +11,21 @@ import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { avatarMulterConfig } from './upload/avatar-multer.config';
 import { ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @ApiTags('User')
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly service: UsersService) {}
+
+  @Get('admin/customers')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
+  listAdminCustomers() {
+    return this.service.listAdminCustomers();
+  }
 
   /* --------- Perfil ---------- */
   @Get('me')
