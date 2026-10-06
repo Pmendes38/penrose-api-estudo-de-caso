@@ -35,6 +35,13 @@ export class ProductsService {
     return this.repo.findPublicPaged(query);
   }
 
+  async getPurchasableBySku(sku: string) {
+    const product = await this.repo.findBySku(sku.trim().toUpperCase());
+    if (!product || product.status !== ProductStatus.ACTIVE) throw new NotFoundException('product_unavailable');
+    if (!Number.isSafeInteger(product.priceCents) || product.priceCents <= 0) throw new BadRequestException('product_price_unavailable');
+    return product;
+  }
+
   async findPublicByIdOrSlug(idOrSlug: string) {
     if (!idOrSlug?.trim()) throw new BadRequestException('Product id/slug is required');
 

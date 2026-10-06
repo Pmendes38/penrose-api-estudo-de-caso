@@ -10,6 +10,7 @@ import { IdempotencyService } from '../../common/idempotency/idempotency.service
 import { IdempotencyInterceptor } from '../../common/idempotency/idempotency.interceptor';
 import { HttpModule } from '@nestjs/axios';
 import { MelhorEnvioClient } from './providers/melhor-envio.client';
+import { ProductsModule } from '../products/products.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MelhorEnvioClient } from './providers/melhor-envio.client';
       { name: Cart.name, schema: CartSchema }, // necessário para CartRepository
     ]),
     HttpModule,
+    ProductsModule,
   ],
   controllers: [CheckoutController],
   providers: [CheckoutDraftRepository, CheckoutService, CartRepository, IdempotencyService, IdempotencyInterceptor, MelhorEnvioClient],

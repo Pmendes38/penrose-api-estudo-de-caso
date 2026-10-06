@@ -12,6 +12,7 @@ import { CartRepository } from '../cart/repo/cart.repository';
 import type { CheckoutDraft } from './schemas/checkout-draft.schema';
 import { MelhorEnvioClient } from './providers/melhor-envio.client';
 import { ConfigService } from '@nestjs/config';
+import { ProductsService } from '../products/products.service';
 
 type PrintMode = 'public' | 'private';
 
@@ -33,6 +34,7 @@ export class CheckoutService {
     private readonly carts: CartRepository,
     private readonly me: MelhorEnvioClient,
     private readonly config: ConfigService,
+    private readonly products: ProductsService,
   ) {}
 
   // ------------------------
@@ -96,15 +98,25 @@ export class CheckoutService {
     if (!cart) throw new NotFoundException('cart_not_found');
     if (!cart.items?.length) throw new BadRequestException('empty_cart');
 
+    const quantityBySku = new Map<string, number>();
+    for (const item of cart.items) quantityBySku.set(item.sku, (quantityBySku.get(item.sku) ?? 0) + item.quantity);
+    for (const [sku, quantity] of quantityBySku) {
+      const product = await this.products.getPurchasableBySku(sku);
+      if (quantity > product.stock) throw new BadRequestException('insufficient_stock');
+      for (const item of cart.items.filter((line) => line.sku === sku)) item.unitPrice = product.priceCents;
+    }
+    this.recalc(cart);
+
     if (idempotencyKey) {
       const existing = await this.drafts.findOpenByCartAndIdem(
         (cart as any)._id ?? (cart as any).id,
         idempotencyKey,
       );
-      if (existing) return existing as any;
+      if (existing) {
+        if (existing.totals.itemsSubtotal !== cart.itemsSubtotal) throw new ConflictException('stale_checkout_draft');
+        return existing as any;
+      }
     }
-
-    this.recalc(cart);
 
     const isME =
       cart.shipping?.provider === 'melhor-envio' || !!cart.shipping?.me;

@@ -12,6 +12,7 @@ describe('ProductsService', () => {
     findPublicPaged: jest.fn(),
     findById: jest.fn(),
     findBySlug: jest.fn(),
+    findBySku: jest.fn(),
     findAdminPaged: jest.fn(),
 
     // mutations
@@ -40,6 +41,16 @@ describe('ProductsService', () => {
   });
 
   // ---------------- Public list / find
+
+  it('returns only active products with valid current prices for the cart', async () => {
+    (repo.findBySku as any).mockResolvedValueOnce({ sku: 'PNR-001', status: ProductStatus.ACTIVE, priceCents: 25990, stock: 2 });
+    await expect(service.getPurchasableBySku('pnr-001')).resolves.toMatchObject({ priceCents: 25990, stock: 2 });
+    expect(repo.findBySku).toHaveBeenCalledWith('PNR-001');
+    (repo.findBySku as any).mockResolvedValueOnce({ status: ProductStatus.INACTIVE, priceCents: 25990 });
+    await expect(service.getPurchasableBySku('PNR-001')).rejects.toBeInstanceOf(NotFoundException);
+    (repo.findBySku as any).mockResolvedValueOnce({ status: ProductStatus.ACTIVE, priceCents: 0 });
+    await expect(service.getPurchasableBySku('PNR-001')).rejects.toBeInstanceOf(BadRequestException);
+  });
 
   it('listPublic delegates to repository with provided query', async () => {
     (repo.findPublicPaged as any) = jest.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20, pages: 1 });
@@ -113,6 +124,7 @@ describe('ProductsService', () => {
   // ---------------- Update
 
   it('updateAdmin: success updates and returns product (slug changes with name)', async () => {
+    (repo.findById as any) = jest.fn().mockResolvedValue({ id: 'p1', name: 'Old Name', slug: 'old-name' });
     (repo.updateById as any) = jest.fn().mockImplementation((_id: string, set: any) => {
       expect(set.name).toBe('New Name');
       expect(set.slug).toBe('new-name');
@@ -129,6 +141,7 @@ describe('ProductsService', () => {
   });
 
   it('updateAdmin: duplicate slug/SKU -> Conflict', async () => {
+    (repo.findById as any) = jest.fn().mockResolvedValue({ id: 'p1', name: 'Old Name', slug: 'old-name' });
     (repo.updateById as any) = jest.fn().mockRejectedValue({ code: 11000 });
     await expect(service.updateAdmin('p1', { sku: 'SKU-1' } as any)).rejects.toBeInstanceOf(ConflictException);
   });

@@ -17,6 +17,7 @@ import { Cart } from './schemas/cart.schema';
 import { ShippingService } from '../shipping/shipping.service';
 import { CalculateShippingDto } from '../shipping/dto/calculate-shipping.dto';
 import { CheckoutService } from '../checkout/checkout.service';
+import { ProductsService } from '../products/products.service';
 
 type QuoteCache = {
   postalCode: string; // 8 dígitos
@@ -44,6 +45,7 @@ export class CartService {
     private readonly shipping: ShippingService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     @Inject(forwardRef(() => CheckoutService)) private readonly checkout: CheckoutService,
+    private readonly products: ProductsService,
   ) {}
 
   private toCents(brl: number) {
@@ -209,11 +211,15 @@ export class CartService {
     const c = await this.mustGet(cartId);
     this.assertActive(c);
 
+    const product = await this.products.getPurchasableBySku(dto.sku);
+    const quantityInCart = c.items.filter((it) => it.sku === product.sku).reduce((sum, it) => sum + it.quantity, 0);
+    if (quantityInCart + dto.quantity > product.stock) throw new BadRequestException('insufficient_stock');
+
     const item = {
       id: randomUUID(),
       sku: dto.sku,
       quantity: dto.quantity,
-      unitPrice: await this.getUnitPrice(dto.sku, dto.variant), // centavos
+      unitPrice: product.priceCents, // centavos, valor atual do catálogo
       listPrice: undefined,
       variant: dto.variant,
       discounts: [],
@@ -229,6 +235,7 @@ export class CartService {
     );
     if (same) {
       same.quantity += item.quantity;
+      same.unitPrice = product.priceCents;
       same.total = same.quantity * same.unitPrice;
     } else {
       c.items.push(item as any);
@@ -263,6 +270,10 @@ export class CartService {
 
     if (dto.quantity !== undefined) {
       if (dto.quantity < 1) throw new BadRequestException('min_quantity_1');
+      const product = await this.products.getPurchasableBySku(it.sku);
+      const otherQuantity = c.items.filter((line) => line.sku === it.sku && line.id !== it.id).reduce((sum, line) => sum + line.quantity, 0);
+      if (otherQuantity + dto.quantity > product.stock) throw new BadRequestException('insufficient_stock');
+      it.unitPrice = product.priceCents;
       it.quantity = dto.quantity;
     }
     if (dto.variant) {
@@ -503,7 +514,4 @@ export class CartService {
     return { orderDraftId: draft.id, cart: c };
   }
 
-  private async getUnitPrice(_sku: string, _variant?: Record<string, string>) {
-    return 1000; // centavos
-  }
 }

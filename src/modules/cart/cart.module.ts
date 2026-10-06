@@ -8,11 +8,13 @@ import { IdempotencyService } from '../../common/idempotency/idempotency.service
 import { IdempotencyInterceptor } from '../../common/idempotency/idempotency.interceptor';
 import { ShippingModule } from '../shipping/shipping.module';
 import { CheckoutModule } from '../checkout/checkout.module';
+import { ProductsModule } from '../products/products.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Cart.name, schema: CartSchema }]),
     ShippingModule,
+    ProductsModule,
     forwardRef(() => CheckoutModule),
   ],
   controllers: [CartController],
