@@ -19,7 +19,7 @@ export class ShippingService {
     private readonly config: ConfigService,
     private readonly melhorEnvio: MelhorEnvioProvider,
   ) {
-    this.originPostalCode = this.onlyDigits(this.config.get<string>('ORIGIN_POSTAL_CODE') || '01310100');
+    this.originPostalCode = this.onlyDigits(this.config.get<string>('ORIGIN_POSTAL_CODE') || '72850180');
     this.freeShippingThresholdBRL = Number(this.config.get<string>('FREE_SHIPPING_THRESHOLD_BRL') ?? 400);
   }
 

@@ -35,6 +35,9 @@ export class Product {
   @Prop({ required: true, min: 0, default: 0 }) 
   stock!: number;
 
+  @Prop({ default: false })
+  madeToOrder?: boolean;
+
   @Prop({ required: true, enum: Object.values(ProductStatus), default: ProductStatus.ACTIVE, index: true })
   status!: ProductStatus;
 

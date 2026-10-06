@@ -1,0 +1,651 @@
+[
+  {
+    "id": "pnr-001",
+    "sku": "PNR-001",
+    "name": "Gaara",
+    "category": "Anime",
+    "sourceCategory": "Naruto Clássico",
+    "description": "",
+    "tags": [],
+    "images": [
+      "/assets/catalog/pnr-001/01.webp",
+      "/assets/catalog/pnr-001/02.webp",
+      "/assets/catalog/pnr-001/03.webp",
+      "/assets/catalog/pnr-001/04.webp"
+    ],
+    "regularPriceCents": 59990,
+    "salePriceCents": 25990,
+    "stockStatus": null,
+    "variants": [
+      {
+        "sku": "PNR-001-15",
+        "name": "1:12 (15 cm)",
+        "priceCents": 34990
+      }
+    ]
+  },
+  {
+    "id": "pnr-003",
+    "sku": "PNR-003",
+    "name": "Asa Noturna",
+    "category": "Universo DC",
+    "sourceCategory": "Universo DC",
+    "description": "",
+    "tags": [],
+    "images": [
+      "/assets/catalog/pnr-003/01.webp",
+      "/assets/catalog/pnr-003/02.webp",
+      "/assets/catalog/pnr-003/03.webp",
+      "/assets/catalog/pnr-003/04.webp"
+    ],
+    "regularPriceCents": 54990,
+    "salePriceCents": 25990,
+    "stockStatus": null,
+    "variants": [
+      {
+        "sku": "PNR-003-18",
+        "name": "1:10 (18 cm)",
+        "priceCents": 44990
+      },
+      {
+        "sku": "PNR-003-20",
+        "name": "1:9 (20 cm)",
+        "priceCents": 52990
+      }
+    ]
+  },
+  {
+    "id": "pnr-008",
+    "sku": "PNR-008",
+    "name": "Monkey D. Luffy",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do capitão dos Chapéus de Palha, fiel ao personagem de One Piece. Produzida em impressão 3D de alta precisão e pintura manual, destaca-se pelo chapéu de palha e a pose de ataque icônica.",
+    "tags": [
+      "anime",
+      "one-piece"
+    ],
+    "images": [
+      "/assets/catalog/pnr-008/01.webp",
+      "/assets/catalog/pnr-008/02.webp",
+      "/assets/catalog/pnr-008/03.webp",
+      "/assets/catalog/pnr-008/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-009",
+    "sku": "PNR-009",
+    "name": "Roronoa Zo",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do espadachim dos Chapéus de Palha, feita em 3D com pintura manual detalhada. A peça realça suas três katanas e expressão de determinação.",
+    "tags": [
+      "anime",
+      "one-piece"
+    ],
+    "images": [
+      "/assets/catalog/pnr-009/01.webp",
+      "/assets/catalog/pnr-009/02.webp",
+      "/assets/catalog/pnr-009/03.webp",
+      "/assets/catalog/pnr-009/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-012",
+    "sku": "PNR-012",
+    "name": "Trafagar Law",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do capitão da tripulação Heart Pirates. Impressão 3D de precisão e pintura manual evidenciam sua katana Kikoku e o chapéu característico.",
+    "tags": [
+      "anime",
+      "one-piece"
+    ],
+    "images": [
+      "/assets/catalog/pnr-012/01.webp",
+      "/assets/catalog/pnr-012/02.webp",
+      "/assets/catalog/pnr-012/03.webp",
+      "/assets/catalog/pnr-012/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-013",
+    "sku": "PNR-013",
+    "name": "Portgas D. Ace",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do irmão de Luffy, com efeitos de chamas realistas. Produzida em 3D e pintada manualmente, transmite toda a força do usuário da Mera Mera no Mi.",
+    "tags": [
+      "anime",
+      "one-piece"
+    ],
+    "images": [
+      "/assets/catalog/pnr-013/01.webp",
+      "/assets/catalog/pnr-013/02.webp",
+      "/assets/catalog/pnr-013/03.webp",
+      "/assets/catalog/pnr-013/04.webp",
+      "/assets/catalog/pnr-013/05.webp",
+      "/assets/catalog/pnr-013/06.webp",
+      "/assets/catalog/pnr-013/07.webp",
+      "/assets/catalog/pnr-013/08.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-014",
+    "sku": "PNR-014",
+    "name": "Tony Tony Chopper",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável da rena médica dos Chapéus de Palha. Impressão 3D e pintura manual capturam os detalhes do chapéu rosa e sua expressão fofa.",
+    "tags": [
+      "anime",
+      "one-piece"
+    ],
+    "images": [
+      "/assets/catalog/pnr-014/01.webp",
+      "/assets/catalog/pnr-014/02.webp",
+      "/assets/catalog/pnr-014/03.webp",
+      "/assets/catalog/pnr-014/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-017",
+    "sku": "PNR-017",
+    "name": "Kid Goku",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do jovem Goku de Dragon Ball. Produzida em 3D e pintada à mão, destaca-se pelo bastão mágico e a nuvem voadora.",
+    "tags": [
+      "anime",
+      "dragon-ball"
+    ],
+    "images": [
+      "/assets/catalog/pnr-017/01.webp",
+      "/assets/catalog/pnr-017/02.webp",
+      "/assets/catalog/pnr-017/03.webp",
+      "/assets/catalog/pnr-017/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-018",
+    "sku": "PNR-018",
+    "name": "Goku e Gohan",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável retratando pai e filho em pose clássica de Dragon Ball. Impressão 3D com pintura manual, rica em detalhes de batalha.",
+    "tags": [
+      "anime",
+      "dragon-ball"
+    ],
+    "images": [
+      "/assets/catalog/pnr-018/01.webp",
+      "/assets/catalog/pnr-018/02.webp",
+      "/assets/catalog/pnr-018/03.webp",
+      "/assets/catalog/pnr-018/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-021",
+    "sku": "PNR-021",
+    "name": "Piccolo",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do Namekuseijin sábio e poderoso. Produzida em 3D e pintada à mão, enfatiza sua capa e antenas características.",
+    "tags": [
+      "anime",
+      "dragon-ball"
+    ],
+    "images": [
+      "/assets/catalog/pnr-021/01.webp",
+      "/assets/catalog/pnr-021/02.webp",
+      "/assets/catalog/pnr-021/03.webp",
+      "/assets/catalog/pnr-021/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-030",
+    "sku": "PNR-030",
+    "name": "Bulma",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável da cientista de Dragon Ball. Impressão 3D com pintura manual evidenciando seus trajes icônicos.",
+    "tags": [
+      "anime",
+      "dragon-ball"
+    ],
+    "images": [
+      "/assets/catalog/pnr-030/01.webp",
+      "/assets/catalog/pnr-030/02.webp",
+      "/assets/catalog/pnr-030/03.webp",
+      "/assets/catalog/pnr-030/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-033",
+    "sku": "PNR-033",
+    "name": "Naruto Uzumaki Hokage",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do Sétimo Hokage. Impressão 3D com pintura manual que ressalta a capa e expressão de liderança.",
+    "tags": [
+      "anime",
+      "naruto"
+    ],
+    "images": [
+      "/assets/catalog/pnr-033/01.webp",
+      "/assets/catalog/pnr-033/02.webp",
+      "/assets/catalog/pnr-033/03.webp",
+      "/assets/catalog/pnr-033/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-039",
+    "sku": "PNR-039",
+    "name": "Jiraiya",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do Sábio Tarado. Produção em 3D com pintura manual detalhada, mostrando sua imponência e cabelos brancos.",
+    "tags": [
+      "anime",
+      "naruto"
+    ],
+    "images": [
+      "/assets/catalog/pnr-039/01.webp",
+      "/assets/catalog/pnr-039/02.webp",
+      "/assets/catalog/pnr-039/03.webp",
+      "/assets/catalog/pnr-039/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-043",
+    "sku": "PNR-043",
+    "name": "Nezuko Kamado",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável da irmã de Tanjiro. Produção em 3D e pintura manual detalham o bambu na boca e quimono cor-de-rosa.",
+    "tags": [
+      "anime",
+      "demon-slayer-kimetsu-no-yaba"
+    ],
+    "images": [
+      "/assets/catalog/pnr-043/01.webp",
+      "/assets/catalog/pnr-043/02.webp",
+      "/assets/catalog/pnr-043/03.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-045",
+    "sku": "PNR-045",
+    "name": "Zenitsu Agatsuma",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do espadachim relâmpago. Produção 3D com pintura manual detalhando o uniforme amarelo e katana.",
+    "tags": [
+      "anime",
+      "demon-slayer-kimetsu-no-yaba"
+    ],
+    "images": [
+      "/assets/catalog/pnr-045/01.webp",
+      "/assets/catalog/pnr-045/02.webp",
+      "/assets/catalog/pnr-045/03.webp",
+      "/assets/catalog/pnr-045/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-046",
+    "sku": "PNR-046",
+    "name": "Tanjiro Kamado",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do protagonista de Demon Slayer. Impressão 3D e pintura manual realçam a katana e cicatriz na testa.",
+    "tags": [
+      "anime",
+      "demon-slayer-kimetsu-no-yaba"
+    ],
+    "images": [
+      "/assets/catalog/pnr-046/01.webp",
+      "/assets/catalog/pnr-046/02.webp",
+      "/assets/catalog/pnr-046/03.webp",
+      "/assets/catalog/pnr-046/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-049",
+    "sku": "PNR-049",
+    "name": "Ichigo Kurosaki - Dangai Ichigo",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável da forma Dangai de Ichigo. Impressão 3D e pintura manual destacam a espada massiva e energia espiritual.",
+    "tags": [
+      "anime",
+      "bleach"
+    ],
+    "images": [
+      "/assets/catalog/pnr-049/01.webp",
+      "/assets/catalog/pnr-049/02.webp",
+      "/assets/catalog/pnr-049/03.webp",
+      "/assets/catalog/pnr-049/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-057",
+    "sku": "PNR-057",
+    "name": "Dio Brando",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do vilão lendário de JoJo. Produção 3D e pintura manual evidenciam sua aura de arrogância.",
+    "tags": [
+      "anime",
+      "jojo's-bizarre-adventure"
+    ],
+    "images": [
+      "/assets/catalog/pnr-057/01.webp",
+      "/assets/catalog/pnr-057/02.webp",
+      "/assets/catalog/pnr-057/03.webp",
+      "/assets/catalog/pnr-057/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-071",
+    "sku": "PNR-071",
+    "name": "Alphonse Elric (Simples)",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do irmão alquimista em sua armadura. Impressão 3D com pintura manual reproduz cada detalhe metálico.",
+    "tags": [
+      "anime",
+      "fullmetal-alchemist"
+    ],
+    "images": [
+      "/assets/catalog/pnr-071/01.webp",
+      "/assets/catalog/pnr-071/02.webp",
+      "/assets/catalog/pnr-071/03.webp",
+      "/assets/catalog/pnr-071/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-073",
+    "sku": "PNR-073",
+    "name": "Freecss Adult Gon",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do Gon em sua forma adulta. Impressão 3D e pintura manual transmitem imponência e força.",
+    "tags": [
+      "anime",
+      "hunter-x-hunter"
+    ],
+    "images": [
+      "/assets/catalog/pnr-073/01.webp",
+      "/assets/catalog/pnr-073/02.webp",
+      "/assets/catalog/pnr-073/03.webp",
+      "/assets/catalog/pnr-073/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-076",
+    "sku": "PNR-076",
+    "name": "Neferpitou",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável da guarda real das formigas. Produzida em 3D e pintada à mão, capturando sua aparência felina e sorriso enigmático.",
+    "tags": [
+      "anime",
+      "hunter-x-hunter"
+    ],
+    "images": [
+      "/assets/catalog/pnr-076/01.webp",
+      "/assets/catalog/pnr-076/02.webp",
+      "/assets/catalog/pnr-076/03.webp",
+      "/assets/catalog/pnr-076/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-083",
+    "sku": "PNR-083",
+    "name": "Hulk",
+    "category": "Marvel",
+    "sourceCategory": "Marvel",
+    "description": "Action figure colecionável do gigante esmeralda. Produzida em 3D e pintada à mão, com músculos e expressão de fúria impressionantes.",
+    "tags": [
+      "marvel",
+      "filme"
+    ],
+    "images": [
+      "/assets/catalog/pnr-083/01.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-091",
+    "sku": "PNR-091",
+    "name": "Superman & Krypto",
+    "category": "Universo DC",
+    "sourceCategory": "DC",
+    "description": "Diorama colecionável do herói kryptoniano ao lado de seu cão. Produzido em 3D e pintado à mão, exaltando o espírito heroico.",
+    "tags": [
+      "dc",
+      "filme"
+    ],
+    "images": [
+      "/assets/catalog/pnr-091/01.webp",
+      "/assets/catalog/pnr-091/02.webp",
+      "/assets/catalog/pnr-091/03.webp",
+      "/assets/catalog/pnr-091/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-092",
+    "sku": "PNR-092",
+    "name": "Batman (Simples)",
+    "category": "Universo DC",
+    "sourceCategory": "DC",
+    "description": "Action figure colecionável do Cavaleiro das Trevas. Impressão 3D e pintura manual reproduzem a capa sombria e pose icônica.",
+    "tags": [
+      "dc",
+      "filme"
+    ],
+    "images": [
+      "/assets/catalog/pnr-092/01.webp",
+      "/assets/catalog/pnr-092/02.webp",
+      "/assets/catalog/pnr-092/03.webp",
+      "/assets/catalog/pnr-092/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-093",
+    "sku": "PNR-093",
+    "name": "Armor Batman",
+    "category": "Universo DC",
+    "sourceCategory": "DC",
+    "description": "Action figure colecionável do Batman em armadura especial. Produzida em 3D e pintada manualmente, destacando o design robusto.",
+    "tags": [
+      "dc",
+      "filme"
+    ],
+    "images": [
+      "/assets/catalog/pnr-093/01.webp",
+      "/assets/catalog/pnr-093/02.webp",
+      "/assets/catalog/pnr-093/03.webp",
+      "/assets/catalog/pnr-093/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-095",
+    "sku": "PNR-095",
+    "name": "Aquaman",
+    "category": "Universo DC",
+    "sourceCategory": "DC",
+    "description": "Action figure colecionável do rei de Atlântida. Produzida em 3D e pintada à mão, ressaltando tridente e armadura marinha.",
+    "tags": [
+      "dc",
+      "filme"
+    ],
+    "images": [
+      "/assets/catalog/pnr-095/01.webp",
+      "/assets/catalog/pnr-095/02.webp",
+      "/assets/catalog/pnr-095/03.webp",
+      "/assets/catalog/pnr-095/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-096",
+    "sku": "PNR-096",
+    "name": "Wolverine (Simples)",
+    "category": "Marvel",
+    "sourceCategory": "Marvel",
+    "description": "Action figure colecionável do mutante com garras de adamantium. Impressão 3D e pintura manual realçam sua fúria e uniforme clássico.",
+    "tags": [
+      "marvel",
+      "filme"
+    ],
+    "images": [
+      "/assets/catalog/pnr-096/01.webp",
+      "/assets/catalog/pnr-096/02.webp",
+      "/assets/catalog/pnr-096/03.webp",
+      "/assets/catalog/pnr-096/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-105",
+    "sku": "PNR-105",
+    "name": "Fera",
+    "category": "Marvel",
+    "sourceCategory": "Marvel",
+    "description": "Action figure colecionável do mutante azul. Impressão 3D e pintura manual detalham músculos e feições animalescas.",
+    "tags": [
+      "marvel",
+      "filme"
+    ],
+    "images": [
+      "/assets/catalog/pnr-105/01.webp",
+      "/assets/catalog/pnr-105/02.webp",
+      "/assets/catalog/pnr-105/03.webp",
+      "/assets/catalog/pnr-105/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  },
+  {
+    "id": "pnr-132",
+    "sku": "PNR-132",
+    "name": "Sanji (Simples)",
+    "category": "Anime",
+    "sourceCategory": "Anime",
+    "description": "Action figure colecionável do cozinheiro dos Chapéus de Palha em traje clássico. Produzida em 3D e pintada manualmente, com detalhe ao cigarro e pose de luta.",
+    "tags": [
+      "anime",
+      "one-piece"
+    ],
+    "images": [
+      "/assets/catalog/pnr-132/01.webp",
+      "/assets/catalog/pnr-132/02.webp",
+      "/assets/catalog/pnr-132/03.webp",
+      "/assets/catalog/pnr-132/04.webp"
+    ],
+    "regularPriceCents": null,
+    "salePriceCents": null,
+    "stockStatus": null,
+    "variants": []
+  }
+]

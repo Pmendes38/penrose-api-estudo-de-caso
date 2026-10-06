@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Min, Matches } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min, Matches } from 'class-validator';
 import { ProductStatus } from '../enums/product-status.enum';
 
 export class CreateProductDto {
@@ -26,6 +26,11 @@ export class CreateProductDto {
   @IsNumber() 
   @Min(0)
   stock?: number;
+
+  @ApiPropertyOptional({ description: 'Produced on demand, without finite physical stock' })
+  @IsOptional()
+  @IsBoolean()
+  madeToOrder?: boolean;
 
   
   @ApiPropertyOptional({ enum: ProductStatus }) 

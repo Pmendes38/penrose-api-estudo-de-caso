@@ -23,4 +23,11 @@ describe('CheckoutService current pricing', () => {
     await expect(service.prepare('c1', 1)).rejects.toBeInstanceOf(BadRequestException);
     expect(drafts.create).not.toHaveBeenCalled();
   });
+
+  it('accepts made-to-order pieces with no physical stock', async () => {
+    const { service, drafts } = setup(0);
+    (service as any).products.getPurchasableBySku.mockResolvedValueOnce({ sku: 'PNR-001', priceCents: 25990, stock: 0, madeToOrder: true });
+    await service.prepare('c1', 1);
+    expect(drafts.create).toHaveBeenCalledTimes(1);
+  });
 });

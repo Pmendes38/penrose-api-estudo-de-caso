@@ -28,4 +28,11 @@ describe('CartService pricing and stock', () => {
     expect(cart.items).toHaveLength(0);
     expect(repo.updateByIdWithVersion).not.toHaveBeenCalled();
   });
+
+  it('accepts made-to-order pieces with no physical stock', async () => {
+    const { service, products } = setup(0);
+    products.getPurchasableBySku.mockResolvedValueOnce({ ...product, stock: 0, madeToOrder: true } as any);
+    const result = await service.addItem('cart-1', 1, { sku: 'PNR-001', quantity: 2 });
+    expect(result.itemsSubtotal).toBe(51980);
+  });
 });

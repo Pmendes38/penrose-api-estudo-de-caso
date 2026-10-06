@@ -213,7 +213,7 @@ export class CartService {
 
     const product = await this.products.getPurchasableBySku(dto.sku);
     const quantityInCart = c.items.filter((it) => it.sku === product.sku).reduce((sum, it) => sum + it.quantity, 0);
-    if (quantityInCart + dto.quantity > product.stock) throw new BadRequestException('insufficient_stock');
+    if (!product.madeToOrder && quantityInCart + dto.quantity > product.stock) throw new BadRequestException('insufficient_stock');
 
     const item = {
       id: randomUUID(),
@@ -272,7 +272,7 @@ export class CartService {
       if (dto.quantity < 1) throw new BadRequestException('min_quantity_1');
       const product = await this.products.getPurchasableBySku(it.sku);
       const otherQuantity = c.items.filter((line) => line.sku === it.sku && line.id !== it.id).reduce((sum, line) => sum + line.quantity, 0);
-      if (otherQuantity + dto.quantity > product.stock) throw new BadRequestException('insufficient_stock');
+      if (!product.madeToOrder && otherQuantity + dto.quantity > product.stock) throw new BadRequestException('insufficient_stock');
       it.unitPrice = product.priceCents;
       it.quantity = dto.quantity;
     }
@@ -453,7 +453,7 @@ export class CartService {
     const insuranceValue = this.computeInsuranceValueBRL(c);
     const volumes = this.buildVolumesForME(c);
     const products = this.buildProductsForME(c);
-    const fromPostal = this.onlyDigits(process.env.ORIGIN_POSTAL_CODE || '01310100');
+    const fromPostal = this.onlyDigits(process.env.ORIGIN_POSTAL_CODE || '72850180');
     const toPostal = cached.postalCode;
 
     c.shipping = {

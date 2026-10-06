@@ -42,6 +42,14 @@ describe('ProductsService', () => {
 
   // ---------------- Public list / find
 
+  it('seeds the empty catalog as made-to-order without inventing stock', async () => {
+    (repo.findBySku as any).mockResolvedValue(null);
+    await service.onModuleInit();
+    expect(repo.create).toHaveBeenCalledTimes(29);
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ sku: 'PNR-001', priceCents: 25990, stock: 0, madeToOrder: true }));
+    expect(repo.create).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'Kakashi Hatake' }));
+  });
+
   it('returns only active products with valid current prices for the cart', async () => {
     (repo.findBySku as any).mockResolvedValueOnce({ sku: 'PNR-001', status: ProductStatus.ACTIVE, priceCents: 25990, stock: 2 });
     await expect(service.getPurchasableBySku('pnr-001')).resolves.toMatchObject({ priceCents: 25990, stock: 2 });

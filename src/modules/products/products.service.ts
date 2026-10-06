@@ -4,6 +4,7 @@ import {
   ConflictException,
   InternalServerErrorException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { ProductsRepository } from './repo/products.repository';
@@ -11,6 +12,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { ProductStatus } from './enums/product-status.enum';
+import catalog from './catalog-data.json';
 
 function slugify(input: string) {
   return input
@@ -28,8 +30,18 @@ function normalizeSku(raw?: string | null) {
 }
 
 @Injectable()
-export class ProductsService {
+export class ProductsService implements OnModuleInit {
   constructor(private readonly repo: ProductsRepository) {}
+
+  async onModuleInit() {
+    // ponytail: bundled catalog is the bootstrap source; archive by status, not delete, or it returns on restart.
+    for (const product of catalog) {
+      if (await this.repo.findBySku(product.sku)) continue;
+      const variantPrices = product.variants.map((variant) => variant.priceCents).filter((price): price is number => price !== null);
+      const priceCents = product.salePriceCents ?? product.regularPriceCents ?? (variantPrices.length ? Math.min(...variantPrices) : 54990);
+      await this.repo.create({ id: product.id, sku: product.sku, name: product.name, slug: slugify(product.name), category: product.category, description: product.description, images: product.images, tags: product.tags, priceCents, stock: 0, madeToOrder: true, status: ProductStatus.ACTIVE } as any);
+    }
+  }
 
   listPublic(query: QueryProductsDto) {
     return this.repo.findPublicPaged(query);
@@ -118,6 +130,7 @@ export class ProductsService {
       category: dto.category?.trim(),
       priceCents: dto.priceCents,
       stock: dto.stock ?? 0,
+      madeToOrder: dto.madeToOrder ?? false,
       status: dto.status ?? ProductStatus.ACTIVE,
       description: dto.description,
       images: (dto.images ?? []).map((u) => String(u).trim()).filter(Boolean),
@@ -152,6 +165,7 @@ export class ProductsService {
 
     if (dto.priceCents !== undefined) set.priceCents = dto.priceCents;
     if (dto.stock !== undefined) set.stock = dto.stock;
+    if (dto.madeToOrder !== undefined) set.madeToOrder = dto.madeToOrder;
 
     if (dto.status !== undefined) set.status = dto.status;
     if (dto.description !== undefined) set.description = dto.description;
