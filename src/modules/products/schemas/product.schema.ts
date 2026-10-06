@@ -38,6 +38,9 @@ export class Product {
   @Prop({ default: false })
   madeToOrder?: boolean;
 
+  @Prop({ default: 0 })
+  pricingVersion?: number;
+
   @Prop({ required: true, enum: Object.values(ProductStatus), default: ProductStatus.ACTIVE, index: true })
   status!: ProductStatus;
 

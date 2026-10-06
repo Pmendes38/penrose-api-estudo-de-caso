@@ -8,7 +8,7 @@ describe('CartService pricing and stock', () => {
   function setup(stock = 2) {
     const cart = makeCart();
     const repo = { findById: jest.fn().mockResolvedValue(cart), updateByIdWithVersion: jest.fn().mockImplementation(async (_id, _version, patch) => ({ ...cart, ...patch })) };
-    const products = { getPurchasableBySku: jest.fn().mockResolvedValue({ ...product, stock }) };
+    const products = { getPurchasableBySku: jest.fn().mockResolvedValue({ ...product, stock }), priceForVariant: jest.fn((item, variant) => item.madeToOrder && variant?.size === '30cm' ? 180000 : item.priceCents) };
     const checkout = { abandonAllForCart: jest.fn().mockResolvedValue(undefined) };
     const service = new CartService(repo as any, {} as any, { del: jest.fn() } as any, checkout as any, products as any);
     return { service, repo, products, cart };
@@ -34,5 +34,21 @@ describe('CartService pricing and stock', () => {
     products.getPurchasableBySku.mockResolvedValueOnce({ ...product, stock: 0, madeToOrder: true } as any);
     const result = await service.addItem('cart-1', 1, { sku: 'PNR-001', quantity: 2 });
     expect(result.itemsSubtotal).toBe(51980);
+  });
+
+  it('stores the selected 30 cm promotional price in the cart', async () => {
+    const { service, products } = setup(0);
+    products.getPurchasableBySku.mockResolvedValueOnce({ ...product, stock: 0, madeToOrder: true } as any);
+    const result = await service.addItem('cart-1', 1, { sku: 'PNR-001', quantity: 1, variant: { size: '30cm' } });
+    expect(result.items[0].unitPrice).toBe(180000);
+  });
+
+  it('reprices an item when its size changes', async () => {
+    const { service, products } = setup(0);
+    products.getPurchasableBySku.mockResolvedValue({ ...product, stock: 0, madeToOrder: true } as any);
+    const added = await service.addItem('cart-1', 1, { sku: 'PNR-001', quantity: 1, variant: { size: '20cm' } });
+    products.priceForVariant.mockImplementation((_item, variant) => variant?.size === '40cm' ? 320000 : 160000);
+    const updated = await service.updateItem('cart-1', 1, added.items[0].id, { variant: { size: '40cm' } });
+    expect(updated.items[0].unitPrice).toBe(320000);
   });
 });

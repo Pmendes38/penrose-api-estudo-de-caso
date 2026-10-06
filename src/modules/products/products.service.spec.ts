@@ -46,8 +46,24 @@ describe('ProductsService', () => {
     (repo.findBySku as any).mockResolvedValue(null);
     await service.onModuleInit();
     expect(repo.create).toHaveBeenCalledTimes(29);
-    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ sku: 'PNR-001', priceCents: 25990, stock: 0, madeToOrder: true }));
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ sku: 'PNR-001', priceCents: 160000, pricingVersion: 2, stock: 0, madeToOrder: true }));
     expect(repo.create).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'Kakashi Hatake' }));
+  });
+
+  it('migrates only previously seeded made-to-order prices once', async () => {
+    (repo.findBySku as any).mockImplementation(async (sku: string) => sku === 'PNR-001' ? { id: 'pnr-001', madeToOrder: true, pricingVersion: 0 } : { id: sku, madeToOrder: true, pricingVersion: 2 });
+    await service.onModuleInit();
+    (repo.findBySku as any).mockReset();
+    expect(repo.updateById).toHaveBeenCalledTimes(1);
+    expect(repo.updateById).toHaveBeenCalledWith('pnr-001', { priceCents: 160000, pricingVersion: 2 });
+  });
+
+  it('charges only the selected size, with the promotion on 30 cm', () => {
+    const product = { priceCents: 160000, madeToOrder: true };
+    expect(service.priceForVariant(product, { size: '20cm' })).toBe(160000);
+    expect(service.priceForVariant(product, { size: '30cm' })).toBe(180000);
+    expect(service.priceForVariant(product, { size: '40cm' })).toBe(320000);
+    expect(() => service.priceForVariant(product, { size: '45cm' })).toThrow(BadRequestException);
   });
 
   it('returns only active products with valid current prices for the cart', async () => {

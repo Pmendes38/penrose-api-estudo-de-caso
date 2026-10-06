@@ -219,7 +219,7 @@ export class CartService {
       id: randomUUID(),
       sku: dto.sku,
       quantity: dto.quantity,
-      unitPrice: product.priceCents, // centavos, valor atual do catálogo
+      unitPrice: this.products.priceForVariant(product, dto.variant),
       listPrice: undefined,
       variant: dto.variant,
       discounts: [],
@@ -235,7 +235,7 @@ export class CartService {
     );
     if (same) {
       same.quantity += item.quantity;
-      same.unitPrice = product.priceCents;
+      same.unitPrice = item.unitPrice;
       same.total = same.quantity * same.unitPrice;
     } else {
       c.items.push(item as any);
@@ -268,13 +268,13 @@ export class CartService {
     const it = c.items.find((i) => i.id === itemId);
     if (!it) throw new NotFoundException('item_not_found');
 
-    if (dto.quantity !== undefined) {
-      if (dto.quantity < 1) throw new BadRequestException('min_quantity_1');
+    if (dto.quantity !== undefined || dto.variant !== undefined) {
+      if (dto.quantity !== undefined && dto.quantity < 1) throw new BadRequestException('min_quantity_1');
       const product = await this.products.getPurchasableBySku(it.sku);
       const otherQuantity = c.items.filter((line) => line.sku === it.sku && line.id !== it.id).reduce((sum, line) => sum + line.quantity, 0);
-      if (!product.madeToOrder && otherQuantity + dto.quantity > product.stock) throw new BadRequestException('insufficient_stock');
-      it.unitPrice = product.priceCents;
-      it.quantity = dto.quantity;
+      if (!product.madeToOrder && otherQuantity + (dto.quantity ?? it.quantity) > product.stock) throw new BadRequestException('insufficient_stock');
+      it.unitPrice = this.products.priceForVariant(product, dto.variant ?? it.variant);
+      if (dto.quantity !== undefined) it.quantity = dto.quantity;
     }
     if (dto.variant) {
       it.variant = dto.variant;

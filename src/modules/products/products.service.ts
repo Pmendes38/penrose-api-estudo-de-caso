@@ -14,6 +14,8 @@ import { QueryProductsDto } from './dto/query-products.dto';
 import { ProductStatus } from './enums/product-status.enum';
 import catalog from './catalog-data.json';
 
+export const sizePricesCents: Record<string, number> = { '20cm': 160000, '30cm': 180000, '40cm': 320000 };
+
 function slugify(input: string) {
   return input
     .toLowerCase()
@@ -36,10 +38,12 @@ export class ProductsService implements OnModuleInit {
   async onModuleInit() {
     // ponytail: bundled catalog is the bootstrap source; archive by status, not delete, or it returns on restart.
     for (const product of catalog) {
-      if (await this.repo.findBySku(product.sku)) continue;
-      const variantPrices = product.variants.map((variant) => variant.priceCents).filter((price): price is number => price !== null);
-      const priceCents = product.salePriceCents ?? product.regularPriceCents ?? (variantPrices.length ? Math.min(...variantPrices) : 54990);
-      await this.repo.create({ id: product.id, sku: product.sku, name: product.name, slug: slugify(product.name), category: product.category, description: product.description, images: product.images, tags: product.tags, priceCents, stock: 0, madeToOrder: true, status: ProductStatus.ACTIVE } as any);
+      const existing = await this.repo.findBySku(product.sku);
+      if (existing) {
+        if (existing.madeToOrder && existing.pricingVersion !== 2) await this.repo.updateById(existing.id, { priceCents: sizePricesCents['20cm'], pricingVersion: 2 });
+        continue;
+      }
+      await this.repo.create({ id: product.id, sku: product.sku, name: product.name, slug: slugify(product.name), category: product.category, description: product.description, images: product.images, tags: product.tags, priceCents: sizePricesCents['20cm'], pricingVersion: 2, stock: 0, madeToOrder: true, status: ProductStatus.ACTIVE } as any);
     }
   }
 
@@ -52,6 +56,15 @@ export class ProductsService implements OnModuleInit {
     if (!product || product.status !== ProductStatus.ACTIVE) throw new NotFoundException('product_unavailable');
     if (!Number.isSafeInteger(product.priceCents) || product.priceCents <= 0) throw new BadRequestException('product_price_unavailable');
     return product;
+  }
+
+  priceForVariant(product: { priceCents: number; madeToOrder?: boolean }, variant?: Record<string, string>) {
+    if (!product.madeToOrder) return product.priceCents;
+    // ponytail: one price ladder covers every custom piece; store per-product ladders if they diverge.
+    const size = variant?.size ?? '20cm';
+    const price = sizePricesCents[size];
+    if (!price) throw new BadRequestException('invalid_size');
+    return price;
   }
 
   async findPublicByIdOrSlug(idOrSlug: string) {

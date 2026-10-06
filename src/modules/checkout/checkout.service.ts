@@ -103,7 +103,7 @@ export class CheckoutService {
     for (const [sku, quantity] of quantityBySku) {
       const product = await this.products.getPurchasableBySku(sku);
       if (!product.madeToOrder && quantity > product.stock) throw new BadRequestException('insufficient_stock');
-      for (const item of cart.items.filter((line) => line.sku === sku)) item.unitPrice = product.priceCents;
+      for (const item of cart.items.filter((line) => line.sku === sku)) item.unitPrice = this.products.priceForVariant(product, item.variant);
     }
     this.recalc(cart);
 
