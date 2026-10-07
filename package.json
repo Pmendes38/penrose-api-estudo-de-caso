@@ -6,7 +6,6 @@
     "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "start": "node dist/main.js",
     "build": "tsc -p tsconfig.build.json",
-    "postbuild": "node scripts/bootstrap-test-admin.cjs",
     "db:indexes": "ts-node --transpile-only scripts/setup-indexes.ts",
     "test": "jest",
     "test:watch": "jest --watch",
