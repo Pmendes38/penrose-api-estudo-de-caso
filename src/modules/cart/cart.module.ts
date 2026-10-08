@@ -9,12 +9,14 @@ import { IdempotencyInterceptor } from '../../common/idempotency/idempotency.int
 import { ShippingModule } from '../shipping/shipping.module';
 import { CheckoutModule } from '../checkout/checkout.module';
 import { ProductsModule } from '../products/products.module';
+import { CouponsModule } from '../coupons/coupons.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Cart.name, schema: CartSchema }]),
     ShippingModule,
     ProductsModule,
+    CouponsModule,
     forwardRef(() => CheckoutModule),
   ],
   controllers: [CartController],

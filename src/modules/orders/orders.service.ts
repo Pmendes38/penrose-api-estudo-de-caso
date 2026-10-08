@@ -9,7 +9,7 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './enums/order-status.enum';
 
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  [OrderStatus.PENDING]:     [OrderStatus.PROCESSING, OrderStatus.CANCELED],
+  [OrderStatus.PENDING]:     [OrderStatus.PROCESSING, OrderStatus.PAID, OrderStatus.CANCELED],
   [OrderStatus.PROCESSING]:  [OrderStatus.PAID, OrderStatus.CANCELED],
   [OrderStatus.PAID]:        [OrderStatus.SHIPPED, OrderStatus.REFUNDED],
   [OrderStatus.SHIPPED]:     [OrderStatus.DELIVERED],
@@ -37,7 +37,7 @@ export class OrdersService {
     return this.ordersRepo.findByCustomer(customerId, page, pageSize);
   }
 
-  async createOrder(dto: CreateOrderDto) {
+  async createOrder(dto: CreateOrderDto, checkoutDraftId?: string) {
     if (!dto.items?.length) throw new BadRequestException('Order must have at least one item');
 
     const subtotalCalc = (dto.items as any[]).reduce(
@@ -58,6 +58,7 @@ export class OrdersService {
 
     const doc = {
       id: crypto.randomUUID(),
+      checkoutDraftId,
       orderNumber,
       customerId: dto.customerId,
       items: dto.items,
@@ -76,7 +77,11 @@ export class OrdersService {
     try {
       const created = await this.ordersRepo.create(doc as any);
       return created.toJSON();
-    } catch {
+    } catch (error: any) {
+      if (error?.code === 11000 && checkoutDraftId) {
+        const existing = await this.ordersRepo.findByCheckoutDraftId(checkoutDraftId);
+        if (existing) return existing;
+      }
       throw new InternalServerErrorException('Failed to create order');
     }
   }
@@ -84,6 +89,7 @@ export class OrdersService {
   async updateStatus(id: string, newStatus: OrderStatus, changedBy?: string) {
     const current = await this.ordersRepo.findById(id);
     if (!current) throw new NotFoundException('Order not found');
+    if (current.status === newStatus) return { message: 'Status unchanged', order: current };
 
     const allowed = ALLOWED_TRANSITIONS[current.status as OrderStatus] ?? [];
     if (!allowed.includes(newStatus)) {
@@ -102,6 +108,10 @@ export class OrdersService {
 
   async cancelOrder(id: string, changedBy?: string) {
     return this.updateStatus(id, OrderStatus.CANCELED, changedBy);
+  }
+
+  findByCheckoutDraftId(id: string) {
+    return this.ordersRepo.findByCheckoutDraftId(id);
   }
 
   async refundOrder(id: string, changedBy?: string) {

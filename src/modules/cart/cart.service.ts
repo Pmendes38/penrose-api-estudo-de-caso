@@ -18,6 +18,7 @@ import { ShippingService } from '../shipping/shipping.service';
 import { CalculateShippingDto } from '../shipping/dto/calculate-shipping.dto';
 import { CheckoutService } from '../checkout/checkout.service';
 import { ProductsService } from '../products/products.service';
+import { CouponsService } from '../coupons/coupons.service';
 
 type QuoteCache = {
   postalCode: string; // 8 dígitos
@@ -46,6 +47,7 @@ export class CartService {
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     @Inject(forwardRef(() => CheckoutService)) private readonly checkout: CheckoutService,
     private readonly products: ProductsService,
+    private readonly coupons: CouponsService,
   ) {}
 
   private toCents(brl: number) {
@@ -66,7 +68,7 @@ export class CartService {
     return String(v || '').replace(/\D/g, '');
   }
 
-  private recalc(cart: Cart): Cart {
+  private async recalc(cart: Cart): Promise<Cart> {
     for (const it of cart.items ?? []) {
       const unit = Number(it.unitPrice) || 0; // centavos
       const qty = Math.max(1, Number(it.quantity) || 1);
@@ -79,7 +81,7 @@ export class CartService {
     );
 
     const itemDiscounts = this.sumItemDiscounts(cart);
-    const couponDiscounts = 0; // plugar sua engine de cupons aqui
+    const couponDiscounts = await this.coupons.cartDiscount({ ...cart, itemsSubtotal });
     const discountTotal = this.clampNonNegative(itemDiscounts + couponDiscounts);
 
     const shippingTotal = Number(cart.shipping?.amount) || 0;
@@ -139,6 +141,7 @@ export class CartService {
       coupons: c.coupons as any,
       shipping: c.shipping as any,
       shippingAddress: c.shippingAddress as any,
+      shippingQuotes: c.shippingQuotes,
       itemsSubtotal: c.itemsSubtotal,
       discountTotal: c.discountTotal,
       shippingTotal: c.shippingTotal,
@@ -151,6 +154,11 @@ export class CartService {
 
   private async clearShippingCacheAndSelection(cartId: string, cart?: Cart) {
     await this.cache.del(`cart:ship:${cartId}`);
+    if (cart) {
+      cart.shippingQuotes = undefined;
+      cart.shippingTotal = 0;
+      cart.grandTotal = this.clampNonNegative(cart.itemsSubtotal - cart.discountTotal + cart.taxTotal);
+    }
     if (cart && cart.shipping) {
       cart.shipping = undefined as any;
     }
@@ -217,6 +225,9 @@ export class CartService {
 
     const item = {
       id: randomUUID(),
+      productId: product.id,
+      name: product.name,
+      image: product.images?.[0],
       sku: dto.sku,
       quantity: dto.quantity,
       unitPrice: this.products.priceForVariant(product, dto.variant),
@@ -241,7 +252,7 @@ export class CartService {
       c.items.push(item as any);
     }
 
-    this.recalc(c);
+    await this.recalc(c);
     await this.clearShippingCacheAndSelection(cartId, c);
 
     const updated = await this.repo.updateByIdWithVersion(
@@ -281,7 +292,7 @@ export class CartService {
     }
     it.total = it.quantity * it.unitPrice;
 
-    this.recalc(c);
+    await this.recalc(c);
     await this.clearShippingCacheAndSelection(cartId, c);
 
     const updated = await this.repo.updateByIdWithVersion(
@@ -306,7 +317,7 @@ export class CartService {
 
     c.items = c.items.filter((i) => i.id !== itemId) as any;
 
-    this.recalc(c);
+    await this.recalc(c);
     await this.clearShippingCacheAndSelection(cartId, c);
 
     const updated = await this.repo.updateByIdWithVersion(
@@ -329,9 +340,9 @@ export class CartService {
     const c = await this.mustGet(cartId);
     this.assertActive(c);
 
-    if (!c.coupons.includes(code)) c.coupons.push(code);
+    c.coupons = [code.trim().toUpperCase()];
 
-    this.recalc(c);
+    await this.recalc(c);
     await this.clearShippingCacheAndSelection(cartId, c);
 
     const updated = await this.repo.updateByIdWithVersion(
@@ -356,7 +367,7 @@ export class CartService {
 
     c.coupons = c.coupons.filter((x) => x !== code);
 
-    this.recalc(c);
+    await this.recalc(c);
     await this.clearShippingCacheAndSelection(cartId, c);
 
     const updated = await this.repo.updateByIdWithVersion(
@@ -416,6 +427,7 @@ export class CartService {
     });
 
     const payload: QuoteCache = { postalCode: toDigits, quotes };
+    c.shippingQuotes = { ...payload, expiresAt: Date.now() + this.quoteCacheTtlSec * 1000 };
     await this.cache.set(`cart:ship:${cartId}`, payload, this.quoteCacheTtlSec);
 
     // Persistir endereço normalizado (sem "fixar" seleção)
@@ -434,7 +446,9 @@ export class CartService {
     this.assertActive(c);
 
     const serviceCode = String(dto.serviceCode);
-    const cached = (await this.cache.get(`cart:ship:${cartId}`)) as QuoteCache | null;
+    const cached = c.shippingQuotes
+      ? (c.shippingQuotes.expiresAt > Date.now() ? c.shippingQuotes : null)
+      : (await this.cache.get(`cart:ship:${cartId}`)) as QuoteCache | null;
     if (!cached) throw new BadRequestException('shipping_quotes_expired');
 
     const sel = cached.quotes.find((q) => String(q.serviceCode) === serviceCode);
@@ -442,11 +456,11 @@ export class CartService {
 
     const nonCommercial = !!dto.nonCommercial;
     const invoiceKey = String(dto.invoiceKey || '').trim();
-    if (!nonCommercial && !invoiceKey) {
+    if (sel.source !== 'demo' && !nonCommercial && !invoiceKey) {
       throw new BadRequestException('invoiceKey_required_when_commercial');
     }
     const agencyId = dto.agencyId ? String(dto.agencyId) : undefined;
-    if (sel.me?.requiresAgency && !agencyId) {
+    if (sel.source !== 'demo' && sel.me?.requiresAgency && !agencyId) {
       throw new BadRequestException('agency_required_for_selected_service');
     }
 
@@ -490,7 +504,7 @@ export class CartService {
       postalCode: toPostal,
     };
 
-    this.recalc(c);
+    await this.recalc(c);
 
     const updated = await this.repo.updateByIdWithVersion(
       cartId,
@@ -509,7 +523,7 @@ export class CartService {
     this.assertActive(c);
     if (!c.items?.length) throw new BadRequestException('empty_cart');
 
-    this.recalc(c);
+    await this.recalc(c);
     const draft = await this.checkout.prepare(cartId, expectedVersion ?? c.version, /*idempotencyKey*/ undefined);
     return { orderDraftId: draft.id, cart: c };
   }

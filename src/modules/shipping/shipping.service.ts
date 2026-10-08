@@ -86,6 +86,11 @@ export class ShippingService {
 
   async quote(dto: CalculateShippingDto) {
     const toDigits = this.normalizePostalCode(dto.destination.postalCode);
+    if (this.config.get('COMMERCE_MODE') === 'demo') {
+      const quotes = this.fallbackQuotes(toDigits, dto.packages[0].weightKg, dto.cartTotal)
+        .map(quote => ({ ...quote, name: `${quote.name} (simulado)`, description: 'Demonstração — sem envio real' }));
+      return { source: 'demo', quotes, bestQuote: this.pickBestOption(quotes, dto.preferCheapest) };
+    }
 
     const pkg = dto.packages[0];
     const weightReal = Math.max(pkg.weightKg, this.computeDimensionalWeightKg(pkg));

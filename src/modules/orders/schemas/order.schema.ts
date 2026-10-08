@@ -36,6 +36,7 @@ const options: SchemaOptions = {
 @Schema(options)
 export class Order {
   @Prop({ required: true }) id!: string;                      // uuid
+  @Prop({ unique: true, sparse: true }) checkoutDraftId?: string;
   @Prop({ required: true, unique: true, index: true }) orderNumber!: number; // seq
   @Prop({ required: true, index: true }) customerId!: string;
 

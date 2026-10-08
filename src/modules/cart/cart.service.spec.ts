@@ -10,7 +10,7 @@ describe('CartService pricing and stock', () => {
     const repo = { findById: jest.fn().mockResolvedValue(cart), updateByIdWithVersion: jest.fn().mockImplementation(async (_id, _version, patch) => ({ ...cart, ...patch })) };
     const products = { getPurchasableBySku: jest.fn().mockResolvedValue({ ...product, stock }), priceForVariant: jest.fn((item, variant) => item.madeToOrder && variant?.size === '30cm' ? 180000 : item.priceCents) };
     const checkout = { abandonAllForCart: jest.fn().mockResolvedValue(undefined) };
-    const service = new CartService(repo as any, {} as any, { del: jest.fn() } as any, checkout as any, products as any);
+    const service = new CartService(repo as any, {} as any, { del: jest.fn() } as any, checkout as any, products as any, { cartDiscount: jest.fn().mockResolvedValue(0) } as any);
     return { service, repo, products, cart };
   }
 

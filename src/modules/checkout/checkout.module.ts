@@ -11,6 +11,7 @@ import { IdempotencyInterceptor } from '../../common/idempotency/idempotency.int
 import { HttpModule } from '@nestjs/axios';
 import { MelhorEnvioClient } from './providers/melhor-envio.client';
 import { ProductsModule } from '../products/products.module';
+import { CouponsModule } from '../coupons/coupons.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ProductsModule } from '../products/products.module';
     ]),
     HttpModule,
     ProductsModule,
+    CouponsModule,
   ],
   controllers: [CheckoutController],
   providers: [CheckoutDraftRepository, CheckoutService, CartRepository, IdempotencyService, IdempotencyInterceptor, MelhorEnvioClient],

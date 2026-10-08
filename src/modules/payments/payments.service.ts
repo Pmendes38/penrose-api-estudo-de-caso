@@ -9,6 +9,8 @@ import { PaymentsRepository } from './repo/payments.repository';
 import { AsaasProvider } from './providers/asaas.provider';
 import { BillingType } from './enums/billing-type.enum';
 import { PaymentStatus } from './enums/payment-status.enum';
+import { CheckoutService } from '../checkout/checkout.service';
+import { OrderStatus } from '../orders/enums/order-status.enum';
 
 const toCents = (brl: number) => Math.max(0, Math.round(Number(brl || 0) * 100));
 
@@ -22,6 +24,7 @@ export class PaymentsService {
     private readonly orders: OrdersService,
     private readonly repo: PaymentsRepository,
     private readonly asaas: AsaasProvider,
+    private readonly checkout: CheckoutService,
   ) {
     this.webhookSecret = this.config.get<string>('ASAAS_WEBHOOK_SECRET');
   }
@@ -29,6 +32,55 @@ export class PaymentsService {
   listAdmin(page = 1, pageSize = 20, filter?: any) { return this.repo.listAdmin(page, pageSize, filter); }
   listByOrder(orderId: string) { return this.repo.listByOrder(orderId); }
   getById(id: string) { return this.repo.findById(id); }
+
+  private assertDemo() {
+    if (this.config.get('COMMERCE_MODE') !== 'demo' || this.config.get('MONGODB_DB') !== 'penrose_demo') {
+      throw new ForbiddenException('Pagamento demonstrativo disponível apenas no ambiente isolado. Nenhuma cobrança foi criada.');
+    }
+  }
+
+  async getOwnedPayment(id: string, customerId: string, role?: string) {
+    const payment = await this.repo.findById(id);
+    if (!payment) throw new NotFoundException('Payment not found');
+    const order = await this.orders.getById(payment.orderId);
+    if (!order || (role !== 'admin' && order.customerId !== customerId)) throw new ForbiddenException();
+    return payment;
+  }
+
+  async createDemoCheckout(dto: CreatePaymentDto, customerId: string, cartId?: string) {
+    this.assertDemo();
+    if (!cartId || !dto.draftId) throw new BadRequestException('Prepare o checkout antes de continuar.');
+    const draft = await this.checkout.getDraftForCart(cartId, dto.draftId);
+    let order = await this.orders.findByCheckoutDraftId(draft.id);
+    if (order && order.customerId !== customerId) throw new ForbiddenException();
+    if (!order) {
+      await this.checkout.validateForPayment(cartId, draft);
+      order = await this.orders.createOrder({
+        customerId,
+        items: draft.items.map((item: any) => ({ productId: item.productId, name: item.name, quantity: item.quantity, unitPrice: item.unitPrice, size: item.variant?.size })),
+        subtotal: draft.totals.itemsSubtotal, shippingTotal: draft.totals.shippingTotal,
+        discountTotal: draft.totals.discountTotal, grandTotal: draft.totals.grandTotal,
+        couponCode: draft.coupons[0], notes: 'DEMONSTRAÇÃO — sem cobrança e sem envio real.',
+      }, draft.id);
+    }
+    if (order.customerId !== customerId) throw new ForbiddenException();
+    return this.repo.getOrCreateDemo({
+      id: order.id, orderId: order.id, billingType: dto.billingType,
+      provider: 'DEMO', status: PaymentStatus.PENDING, amount: order.grandTotal,
+      statusHistory: [{ status: PaymentStatus.PENDING, at: new Date() }],
+    });
+  }
+
+  async resolveDemo(id: string, outcome: string, customerId: string, role?: string) {
+    this.assertDemo();
+    const payment = await this.getOwnedPayment(id, customerId, role);
+    if (payment.provider !== 'DEMO') throw new ForbiddenException();
+    const status = outcome === 'approve' ? PaymentStatus.CONFIRMED : outcome === 'decline' ? PaymentStatus.FAILED : null;
+    if (!status) throw new BadRequestException('Invalid demo outcome');
+    if (payment.status !== PaymentStatus.PENDING && payment.status !== status) throw new ForbiddenException('Payment already resolved');
+    await this.orders.updateStatus(payment.orderId, status === PaymentStatus.CONFIRMED ? OrderStatus.PAID : OrderStatus.CANCELED);
+    return payment.status === status ? payment : this.repo.updateStatus(id, status);
+  }
 
   private defaultDueDateISO(dto: CreatePaymentDto) {
     if (dto.dueDateIso) return dto.dueDateIso;
@@ -38,6 +90,7 @@ export class PaymentsService {
 
   async createPayment(dto: CreatePaymentDto) {
     if (!dto.cartItems?.length) throw new BadRequestException('Cart is empty');
+    if (!Number.isFinite(dto.totalAmount) || dto.totalAmount <= 0) throw new BadRequestException('Total amount must be greater than 0');
 
     const orderItems = dto.cartItems.map((i: any) => ({
       ...i,
@@ -107,6 +160,9 @@ export class PaymentsService {
       province: dto.customerData?.bairro,
       city: dto.customerData?.cidade,
       state: dto.customerData?.estado,
+    }).catch(async () => {
+      await this.repo.updateStatus(paymentId, PaymentStatus.FAILED);
+      throw new BadRequestException('Não foi possível iniciar o pagamento. Nenhuma confirmação foi emitida.');
     });
 
     const grandTotalBRL = Number((grandTotalCents / 100).toFixed(2));
@@ -196,7 +252,8 @@ export class PaymentsService {
       return updated!;
     } catch (err) {
       this.logger.error('Asaas createPayment failed', err as any);
-      return created.toJSON();
+      await this.repo.updateStatus(paymentId, PaymentStatus.FAILED);
+      throw new BadRequestException('Falha ao criar pagamento. Tente novamente.');
     }
   }
 
@@ -222,7 +279,7 @@ export class PaymentsService {
   }
 
   verifyWebhookSignature(rawBody: string, signature?: string) {
-    if (!this.webhookSecret) return true; // dev: sem secret, não bloqueia
+    if (!this.webhookSecret || this.config.get('COMMERCE_MODE') === 'demo') return false;
     if (!signature) return false;
     const h = crypto.createHmac('sha256', this.webhookSecret).update(rawBody).digest('hex');
     return h === signature;

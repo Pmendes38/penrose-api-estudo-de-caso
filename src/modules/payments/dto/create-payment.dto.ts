@@ -130,6 +130,8 @@ export class CreditCardHolderInfoDto {
 }
 
 export class CreatePaymentDto {
+  @IsOptional() @IsString()
+  draftId?: string;
   @ApiProperty({ type: [CartItemDto] })
   
   @IsArray() 

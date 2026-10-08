@@ -7,7 +7,7 @@ describe('CheckoutService current pricing', () => {
     const drafts = { create: jest.fn().mockImplementation(async (data) => ({ toJSON: () => data })) };
     const carts = { findById: jest.fn().mockResolvedValue(cart) };
     const products = { getPurchasableBySku: jest.fn().mockResolvedValue({ sku: 'PNR-001', priceCents: 25990, stock }), priceForVariant: jest.fn((item, variant) => item.madeToOrder && variant?.size === '30cm' ? 180000 : item.priceCents) };
-    const service = new CheckoutService(drafts as any, carts as any, {} as any, { get: jest.fn() } as any, products as any);
+    const service = new CheckoutService(drafts as any, carts as any, {} as any, { get: jest.fn() } as any, products as any, { cartDiscount: jest.fn().mockResolvedValue(0) } as any);
     return { service, drafts };
   }
 

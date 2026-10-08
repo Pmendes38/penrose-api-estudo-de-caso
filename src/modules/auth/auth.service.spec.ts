@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as argon2 from 'argon2';
+import { PasswordService } from '../../shared/password/password.service';
 
 jest.mock('argon2', () => ({
   __esModule: true,
@@ -20,12 +21,15 @@ describe('AuthService', () => {
     findCustomerByEmail: jest.fn(),
     existsCustomerByEmail: jest.fn(),
     insertCustomer: jest.fn(),
-    upsertRefreshToken: jest.fn(),
-    findRefreshToken: jest.fn(),
-    revokeRefreshToken: jest.fn(),
+    createSession: jest.fn(),
+    findSession: jest.fn(),
+    revokeSession: jest.fn(),
+    touchSession: jest.fn(),
+    findPrincipalById: jest.fn().mockResolvedValue({ name: 'User', email: 'contato@example.com', role: 'customer' }),
   } as unknown as jest.Mocked<AuthRepository>;
 
   const jwt = {
+    verifyAsync: jest.fn().mockResolvedValue({ sub: 'u1', jti: 'jti-1' }),
     signAsync: jest.fn(async (_payload: any, opts?: any) => {
       const aud = opts?.audience ?? '';
       return aud.includes(':refresh') ? 'refresh-token' : 'access-token';
@@ -58,6 +62,7 @@ describe('AuthService', () => {
         { provide: AuthRepository, useValue: repo },
         { provide: JwtService, useValue: jwt },
         { provide: ConfigService, useValue: config },
+        { provide: PasswordService, useValue: { verify: (hash: string, value: string) => argon2.verify(hash, value + 'pep'), verifySecret: (hash: string, value: string) => argon2.verify(hash, value + 'pep'), hashSecret: (value: string) => argon2.hash(value + 'pep'), validateAndHash: (value: string) => argon2.hash(value + 'pep') } },
       ],
     }).compile();
 
@@ -74,7 +79,7 @@ describe('AuthService', () => {
       expect(res.role).toBe('admin');
       expect(res.tokens.accessToken).toBe('access-token');
       expect(res.tokens.refreshToken).toBe('refresh-token');
-      expect(repo.upsertRefreshToken).toHaveBeenCalled();
+      expect(repo.createSession).toHaveBeenCalled();
     });
 
     it('fails when email or password missing', async () => {
@@ -159,18 +164,19 @@ describe('AuthService', () => {
 
   describe('refresh', () => {
     it('rotates refresh token and returns new access token', async () => {
-      repo.findRefreshToken = jest.fn().mockResolvedValue({ hashedToken: 'hashed:refresh-tokenpep' });
-      repo.revokeRefreshToken = jest.fn().mockResolvedValue({});
+      repo.findSession = jest.fn().mockResolvedValue({ hashedToken: 'hashed:refresh-tokenpep' });
+      repo.revokeSession = jest.fn().mockResolvedValue({});
 
-      const res = await service.refresh('u1', 'jti-1', 'refresh-token');
+      const res = await service.refreshByToken('refresh-token');
       expect(res.accessToken).toBe('access-token');
-      expect(repo.revokeRefreshToken).toHaveBeenCalledWith('u1', 'jti-1');
-      expect(repo.upsertRefreshToken).toHaveBeenCalled(); // new one
+      expect(repo.revokeSession).toHaveBeenCalledWith('u1', 'jti-1');
+      expect(repo.createSession).toHaveBeenCalled();
     });
 
     it('fails when refresh disabled', async () => {
       (config.get as any) = jest.fn((k: string, d?: any) => (k === 'JWT_REFRESH_ENABLED' ? false : d));
-      await expect(service.refresh('u1', 'jti-1', 'rt')).rejects.toBeInstanceOf(UnauthorizedException);
+      service = new AuthService(config, jwt, repo, {} as any);
+      await expect(service.refreshByToken('rt')).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('fails with invalid refresh record', async () => {
@@ -178,13 +184,13 @@ describe('AuthService', () => {
         const map: any = { JWT_REFRESH_ENABLED: true };
         return k in map ? map[k] : d;
       });
-      repo.findRefreshToken = jest.fn().mockResolvedValue(null);
-      await expect(service.refresh('u1', 'jti-1', 'rt')).rejects.toBeInstanceOf(UnauthorizedException);
+      repo.findSession = jest.fn().mockResolvedValue(null);
+      await expect(service.refreshByToken('rt')).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('fails with wrong token', async () => {
-      repo.findRefreshToken = jest.fn().mockResolvedValue({ hashedToken: 'hashed:OTHERpep' });
-      await expect(service.refresh('u1', 'jti-1', 'refresh-token')).rejects.toBeInstanceOf(UnauthorizedException);
+      repo.findSession = jest.fn().mockResolvedValue({ hashedToken: 'hashed:OTHERpep' });
+      await expect(service.refreshByToken('refresh-token')).rejects.toBeInstanceOf(UnauthorizedException);
     });
   });
 });

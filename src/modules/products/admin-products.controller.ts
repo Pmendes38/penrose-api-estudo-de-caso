@@ -53,6 +53,11 @@ export class AdminProductsController {
     return this.products.createAdmin(dto);
   }
 
+  @Get(':id')
+  getAdmin(@Param('id') id: string) {
+    return this.products.findAdminById(id);
+  }
+
   @Put(':id')
   updateAdmin(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.products.updateAdmin(id, dto);

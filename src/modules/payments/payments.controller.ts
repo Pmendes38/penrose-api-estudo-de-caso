@@ -17,8 +17,8 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOkResponse({ description: 'Create payment (and underlying order)' })
-  create(@Body() dto: CreatePaymentDto) {
-    return this.payments.createPayment(dto);
+  create(@Body() dto: CreatePaymentDto, @Req() req: any) {
+    return this.payments.createDemoCheckout(dto, req.user.id, req.cookies?.cartId);
   }
 
   @ApiBearerAuth('bearer')
@@ -57,8 +57,14 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   @ApiOkResponse({ description: 'Payment by id' })
-  getById(@Param('id') id: string) {
-    return this.payments.getById(id);
+  getById(@Param('id') id: string, @Req() req: any) {
+    return this.payments.getOwnedPayment(id, req.user.id, req.user.role);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/demo/:outcome')
+  resolveDemo(@Param('id') id: string, @Param('outcome') outcome: string, @Req() req: any) {
+    return this.payments.resolveDemo(id, outcome, req.user.id, req.user.role);
   }
 
   @Post('webhook')

@@ -8,6 +8,7 @@ import { BadRequestException, ForbiddenException, NotFoundException } from '@nes
 import { BillingType } from './enums/billing-type.enum';
 import { PaymentStatus } from './enums/payment-status.enum';
 import * as crypto from 'crypto';
+import { CheckoutService } from '../checkout/checkout.service';
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
@@ -54,6 +55,7 @@ describe('PaymentsService', () => {
         { provide: OrdersService, useValue: orders },
         { provide: AsaasProvider, useValue: asaas },
         { provide: ConfigService, useValue: config },
+        { provide: CheckoutService, useValue: {} },
       ],
     }).compile();
 
@@ -121,18 +123,15 @@ describe('PaymentsService', () => {
     expect(out.status).toBe(PaymentStatus.CONFIRMED);
   });
 
-  it('createPayment: if Asaas fails, returns base created payment (fallback)', async () => {
+  it('createPayment: if Asaas fails, marks failure and does not pretend success', async () => {
     asaas.ensureCustomer = jest.fn().mockRejectedValue(new Error('down'));
-    const out = await service.createPayment({
+    await expect(service.createPayment({
       cartItems: [{ productId: 'p1', name: 'Prod 1', quantity: 2, unitPrice: 10 }],
       totalAmount: 20,
       billingType: BillingType.BOLETO,
       customerData: { email: 'contato@example.com', name: 'John' },
-    });
-
-    expect(repo.updateStatus).not.toHaveBeenCalled();
-    expect(out.status).toBe(PaymentStatus.PENDING);
-    expect(out.providerPaymentId).toBeUndefined();
+    })).rejects.toBeInstanceOf(BadRequestException);
+    expect(repo.updateStatus).toHaveBeenCalledWith(expect.any(String), PaymentStatus.FAILED);
   });
 
   it('createPayment: rejects invalid payload (empty cart or non-positive amount)', async () => {

@@ -189,4 +189,12 @@ export class CouponsService {
     if (!updated) throw new NotFoundException('Cupom não encontrado para aplicar resgate');
     return updated;
   }
+
+  async cartDiscount(cart: { coupons?: string[]; items: any[]; itemsSubtotal: number }) {
+    if (!cart.coupons?.length) return 0;
+    if (cart.coupons.length > 1) throw new BadRequestException('Use apenas um cupom por pedido.');
+    const result = await this.validate({ code: cart.coupons[0], cartTotal: cart.itemsSubtotal / 100,
+      items: cart.items.map(item => ({ productId: item.productId, size: item.variant?.size, quantity: item.quantity, unitPrice: item.unitPrice / 100 })) });
+    return Math.round(result.discountTotal * 100);
+  }
 }

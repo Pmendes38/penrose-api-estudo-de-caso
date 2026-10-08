@@ -44,7 +44,8 @@ export class OrdersController {
 
   // Customer
   @ApiBearerAuth('bearer')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   create(@Body() dto: CreateOrderDto) {
     return this.ordersService.createOrder(dto);
@@ -55,7 +56,8 @@ export class OrdersController {
   @Get('me/:customerId')
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
-  listMyOrders(@Param('customerId') customerId: string, @Query('page') page = 1, @Query('pageSize') pageSize = 20) {
+  listMyOrders(@Param('customerId') customerId: string, @Req() req: any, @Query('page') page = 1, @Query('pageSize') pageSize = 20) {
+    if (customerId !== req.user.id) throw new ForbiddenException();
     return this.ordersService.listByCustomer(customerId, Number(page), Number(pageSize));
   }
 

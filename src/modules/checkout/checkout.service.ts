@@ -13,6 +13,7 @@ import type { CheckoutDraft } from './schemas/checkout-draft.schema';
 import { MelhorEnvioClient } from './providers/melhor-envio.client';
 import { ConfigService } from '@nestjs/config';
 import { ProductsService } from '../products/products.service';
+import { CouponsService } from '../coupons/coupons.service';
 
 type PrintMode = 'public' | 'private';
 
@@ -35,6 +36,7 @@ export class CheckoutService {
     private readonly me: MelhorEnvioClient,
     private readonly config: ConfigService,
     private readonly products: ProductsService,
+    private readonly coupons: CouponsService,
   ) {}
 
   // ------------------------
@@ -50,7 +52,7 @@ export class CheckoutService {
       .reduce((s: number, d: any) => s + (Number(d.amount) || 0), 0);
   }
 
-  private recalc(cart: any) {
+  private async recalc(cart: any) {
     for (const it of cart.items ?? []) {
       const unit = Number(it.unitPrice) || 0;
       const qty = Math.max(1, Number(it.quantity) || 1);
@@ -63,7 +65,7 @@ export class CheckoutService {
     );
 
     const itemDiscounts = this.sumItemDiscounts(cart);
-    const couponDiscounts = 0; // engine de cupons do carrinho continua valendo
+    const couponDiscounts = await this.coupons.cartDiscount({ ...cart, itemsSubtotal });
     const discountTotal = this.clampNonNegative(itemDiscounts + couponDiscounts);
     const shippingTotal = Number(cart.shipping?.amount) || 0;
     const taxTotal = Number(cart.taxTotal) || 0;
@@ -104,8 +106,13 @@ export class CheckoutService {
       const product = await this.products.getPurchasableBySku(sku);
       if (!product.madeToOrder && quantity > product.stock) throw new BadRequestException('insufficient_stock');
       for (const item of cart.items.filter((line) => line.sku === sku)) item.unitPrice = this.products.priceForVariant(product, item.variant);
+      for (const item of cart.items.filter((line) => line.sku === sku)) {
+        item.productId = product.id;
+        item.name = product.name;
+        item.image = product.images?.[0];
+      }
     }
-    this.recalc(cart);
+    await this.recalc(cart);
 
     if (idempotencyKey) {
       const existing = await this.drafts.findOpenByCartAndIdem(
@@ -153,6 +160,21 @@ export class CheckoutService {
     const draft = await this.drafts.findByIdForCart(id, cartId);
     if (!draft) throw new NotFoundException('draft_not_found');
     return draft as any;
+  }
+
+  async validateForPayment(cartId: string, draft: CheckoutDraft) {
+    if (draft.status !== 'open' || new Date(draft.expiresAt).getTime() <= Date.now()) throw new ConflictException('checkout_draft_expired');
+    const cart = await this.carts.findById(cartId);
+    if (!cart || cart.status !== 'active' || cart.version !== draft.cartVersion) throw new ConflictException('stale_checkout_draft');
+    if (!draft.shipping || !draft.shippingAddress?.postalCode) throw new BadRequestException('shipping_required');
+    const currentDiscount = await this.coupons.cartDiscount({ coupons: draft.coupons, items: draft.items, itemsSubtotal: draft.totals.itemsSubtotal });
+    if (currentDiscount !== draft.totals.discountTotal) throw new ConflictException('coupon_changed');
+    for (const item of draft.items) {
+      const product = await this.products.getPurchasableBySku(item.sku);
+      if (this.products.priceForVariant(product, item.variant) !== item.unitPrice) throw new ConflictException('product_price_changed');
+      const quantity = draft.items.filter(line => line.sku === item.sku).reduce((sum, line) => sum + line.quantity, 0);
+      if (!product.madeToOrder && quantity > product.stock) throw new BadRequestException('insufficient_stock');
+    }
   }
 
   async abandonAllForCart(cartId: string) {
@@ -361,6 +383,7 @@ export class CheckoutService {
     printMode: PrintMode,
     idempotencyKey?: string,
   ) {
+    if (this.config.get('COMMERCE_MODE') === 'demo') throw new BadRequestException('Etiquetas reais bloqueadas na demonstração.');
     const draft = await this.drafts.findByIdForCart(draftId, cartId);
     if (!draft) throw new NotFoundException('draft_not_found');
     if (draft.status !== 'open') {
@@ -372,7 +395,7 @@ export class CheckoutService {
     if (!cart) throw new NotFoundException('cart_not_found');
     if (!cart.items?.length) throw new BadRequestException('empty_cart');
 
-    this.recalc(cart);
+    await this.recalc(cart);
     this.ensureShippingForME(cart);
 
     const token = this.getAccessTokenForUser((cart as any).userId);

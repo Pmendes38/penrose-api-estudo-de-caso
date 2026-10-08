@@ -107,6 +107,9 @@ export class Cart {
   shippingAddress?: Record<string, any>;
 
   @Prop({ type: Object })
+  shippingQuotes?: { postalCode: string; expiresAt: number; quotes: any[] };
+
+  @Prop({ type: Object })
   shipping?: {
     serviceCode: string;
     label: string;

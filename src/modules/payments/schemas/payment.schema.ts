@@ -28,7 +28,7 @@ const options: SchemaOptions = {
 
 @Schema(options)
 export class Payment {
-  @Prop({ required: true }) 
+  @Prop({ required: true, unique: true }) 
   id!: string; // uuid
   
   @Prop({ required: true, index: true }) 
@@ -44,7 +44,7 @@ export class Payment {
   amount!: number;
 
   @Prop({ default: 'ASAAS' }) 
-  provider!: 'ASAAS';
+  provider!: 'ASAAS' | 'DEMO';
   
   @Prop({ index: true }) 
   providerPaymentId?: string;

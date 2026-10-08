@@ -10,6 +10,10 @@ export class PaymentsRepository {
 
   create(doc: Payment) { return this.model.create(doc); }
 
+  getOrCreateDemo(doc: Partial<Payment>) {
+    return this.model.findOneAndUpdate({ id: doc.id }, { $setOnInsert: doc }, { upsert: true, new: true }).lean().exec();
+  }
+
   findById(id: string) { return this.model.findOne({ id }).lean().exec(); }
 
   findByProviderPaymentId(providerPaymentId: string) {

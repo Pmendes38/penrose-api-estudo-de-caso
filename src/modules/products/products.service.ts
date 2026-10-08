@@ -87,6 +87,12 @@ export class ProductsService implements OnModuleInit {
     return this.repo.findAdminPaged(page, pageSize);
   }
 
+  async findAdminById(id: string) {
+    const product = await this.repo.findById(id);
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
+  }
+
   private async uniqueSlugFromName(name: string, excludeId?: string) {
     const base = slugify(name) || 'produto';
     let candidate = base;

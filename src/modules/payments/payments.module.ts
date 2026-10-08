@@ -8,12 +8,14 @@ import { Payment, PaymentSchema } from './schemas/payment.schema';
 import { PaymentsRepository } from './repo/payments.repository';
 import { AsaasProvider } from './providers/asaas.provider';
 import { OrdersModule } from '../orders/orders.module';
+import { CheckoutModule } from '../checkout/checkout.module';
 
 @Module({
   imports: [
     ConfigModule,
     HttpModule,
     OrdersModule,
+    CheckoutModule,
     MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }]),
   ],
   controllers: [PaymentsController],

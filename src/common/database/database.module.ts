@@ -16,6 +16,9 @@ import { DatabaseHealthService } from './database.health';
         if (!uri || !dbName) {
           throw new Error('MONGODB_URI and MONGODB_DB are required');
         }
+        if (config.get('COMMERCE_MODE') === 'demo' && dbName !== 'penrose_demo') {
+          throw new Error('Demo requires the isolated penrose_demo database');
+        }
         return {
           uri,
           dbName,

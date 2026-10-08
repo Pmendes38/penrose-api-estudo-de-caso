@@ -20,6 +20,10 @@ export class OrdersRepository {
     return this.orderModel.findOne({ id }).lean().exec();
   }
 
+  findByCheckoutDraftId(checkoutDraftId: string) {
+    return this.orderModel.findOne({ checkoutDraftId }).lean().exec();
+  }
+
   findByOrderNumber(orderNumber: number) {
     return this.orderModel.findOne({ orderNumber }).lean().exec();
   }

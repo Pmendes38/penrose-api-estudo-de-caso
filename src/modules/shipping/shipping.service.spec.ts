@@ -14,11 +14,12 @@ describe('ShippingService', () => {
     } as unknown as jest.Mocked<ConfigService>;
 
     const melhorEnvio = {
-        calculateQuotes: jest.fn(),
+        calculateByPackage: jest.fn(),
     } as unknown as jest.Mocked<MelhorEnvioProvider>;
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        config.get.mockReset();
         const mod = await Test.createTestingModule({
             providers: [
                 ShippingService,
@@ -35,13 +36,13 @@ describe('ShippingService', () => {
     it('normalizePostalCode: should normalize a postal code with special characters', () => {
         const result = service.normalizePostalCode('01.658-456');
         
-        expect(result).toBe('01658-456');
+        expect(result).toBe('01658456');
     });
 
     it('normalizePostalCode: should normalize a postal code with only digits', () => {
         const result = service.normalizePostalCode('12345678');
         
-        expect(result).toBe('12345-678');
+        expect(result).toBe('12345678');
     });
 
     it('normalizePostalCode: should throw an error for a postal code with less than 8 digits', () => {
@@ -191,7 +192,7 @@ describe('ShippingService', () => {
 
     it('validatePostalCode: returns normalized postal code for valid input', async () => {
         const result = await service.validatePostalCode('66771412');
-        expect(result).toEqual({ valid: true, normalized: '66771-412' });
+        expect(result).toEqual({ valid: true, normalized: '66771412' });
     });
 
     it('validatePostalCode: throws BadRequestException for invalid input', async () => {
@@ -206,7 +207,7 @@ describe('ShippingService', () => {
             return undefined;
         });
 
-        melhorEnvio.calculateQuotes.mockResolvedValueOnce([
+        melhorEnvio.calculateByPackage.mockResolvedValueOnce([
             { price: 90, delivery_time: 6, company: { name: 'Empresa Entregamo Bem' }, service: 'Serviço É nois'},
         ]);
 
@@ -216,13 +217,13 @@ describe('ShippingService', () => {
         };
 
         const result = await service.quote(mockDto);
-        expect(melhorEnvio.calculateQuotes).toHaveBeenCalled();
+        expect(melhorEnvio.calculateByPackage).toHaveBeenCalled();
         expect(result.source).toBe('melhor-envio');
         expect(result.quotes).toHaveLength(1);
     });
 
     it('quote: returns a fallback quote when the API fails', async () => {
-        melhorEnvio.calculateQuotes.mockRejectedValue(new Error('API offline'));
+        melhorEnvio.calculateByPackage.mockRejectedValue(new Error('API offline'));
 
         const mockDto: CalculateShippingDto = {
             destination: { postalCode: '00000-666' },
@@ -230,7 +231,7 @@ describe('ShippingService', () => {
         };
 
         const result = await service.quote(mockDto);
-        expect(melhorEnvio.calculateQuotes).toHaveBeenCalled();
+        expect(melhorEnvio.calculateByPackage).toHaveBeenCalled();
         expect(result.source).toBe('fallback');
         expect(result.quotes).toHaveLength(2); //PAC e SEDEX fallback
     });
@@ -247,6 +248,6 @@ describe('ShippingService', () => {
     // ------------ trackShipment
 
     it('trackShipment: throws an error as tracking is not provided', async () => {
-        await expect(service.trackShipment('')).rejects.toThrow('trackingCode is required');
+        await expect(service.trackShipment('')).rejects.toThrow('tracking or order id is required');
     });
 });
