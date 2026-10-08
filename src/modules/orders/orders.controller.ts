@@ -7,6 +7,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus } from './enums/order-status.enum';
+import { RequestCancellationDto } from './dto/request-cancellation.dto';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -69,6 +70,12 @@ export class OrdersController {
       if (!o || o.customerId !== req.user.id) throw new ForbiddenException();
       return o;
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('me/order/:id/cancellation-request')
+  requestCancellation(@Param('id') id: string, @Req() req: any, @Body() dto: RequestCancellationDto) {
+    return this.ordersService.requestCancellation(id, req.user.id, dto.reason);
   }
 
   // Fast actions (optional convenience endpoints)

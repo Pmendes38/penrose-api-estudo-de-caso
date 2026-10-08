@@ -112,6 +112,17 @@ export class OrdersService {
     return this.updateStatus(id, OrderStatus.CANCELED, changedBy);
   }
 
+  async requestCancellation(id: string, customerId: string, reason: string) {
+    if (typeof reason !== 'string' || !reason.trim() || reason.trim().length > 500) throw new BadRequestException('Informe um motivo com até 500 caracteres');
+    const current = await this.ordersRepo.findById(id);
+    if (!current || current.customerId !== customerId) throw new ForbiddenException();
+    if (![OrderStatus.PENDING, OrderStatus.PROCESSING, OrderStatus.PAID].includes(current.status)) throw new BadRequestException('Este pedido não permite solicitação de cancelamento');
+    if (current.cancellationRequest) return current;
+    const updated = await this.ordersRepo.requestCancellation(id, customerId, reason.trim());
+    if (!updated) throw new BadRequestException('O pedido mudou. Atualize a página antes de tentar novamente');
+    return updated;
+  }
+
   findByCheckoutDraftId(id: string) {
     return this.ordersRepo.findByCheckoutDraftId(id);
   }

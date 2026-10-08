@@ -12,6 +12,7 @@ describe('OrdersService', () => {
     findByCustomer: jest.fn(),
     create: jest.fn(async (doc: any) => ({ toJSON: () => doc })),
     updateStatus: jest.fn(),
+    requestCancellation: jest.fn(),
   } as unknown as jest.Mocked<OrdersRepository>;
   const countersRepo = { next: jest.fn(async () => 1) } as unknown as jest.Mocked<CountersRepository>;
 
@@ -47,5 +48,21 @@ describe('OrdersService', () => {
   it('rejects invalid transition', async () => {
     (ordersRepo.findById as any) = jest.fn().mockResolvedValue({ id: 'o1', status: OrderStatus.PENDING });
     await expect(service.updateStatus('o1', OrderStatus.DELIVERED)).rejects.toThrow('Transition pending -> delivered is not allowed');
+  });
+
+  it('saves one cancellation request without changing a paid order or accepting another customer', async () => {
+    const order = { id: 'o1', customerId: 'c1', status: OrderStatus.PAID };
+    ordersRepo.findById.mockResolvedValue(order as any);
+    const requested = { ...order, cancellationRequest: { reason: 'Tamanho errado', requestedAt: new Date() } };
+    ordersRepo.requestCancellation.mockResolvedValue(requested as any);
+    expect((await service.requestCancellation('o1', 'c1', ' Tamanho errado ')).status).toBe(OrderStatus.PAID);
+    expect(ordersRepo.requestCancellation).toHaveBeenCalledWith('o1', 'c1', 'Tamanho errado');
+    await expect(service.requestCancellation('o1', 'other', 'Motivo')).rejects.toThrow();
+    ordersRepo.findById.mockResolvedValue(requested as any);
+    await service.requestCancellation('o1', 'c1', 'Outro motivo');
+    expect(ordersRepo.requestCancellation).toHaveBeenCalledTimes(1);
+    ordersRepo.findById.mockResolvedValue({ ...order, status: OrderStatus.SHIPPED } as any);
+    await expect(service.requestCancellation('o1', 'c1', 'Motivo')).rejects.toThrow();
+    await expect(service.requestCancellation('o1', 'c1', ' '.repeat(5))).rejects.toThrow();
   });
 });

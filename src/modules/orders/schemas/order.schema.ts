@@ -19,6 +19,11 @@ class StatusHistory {
   @Prop() changedBy?: string;
 }
 
+class CancellationRequest {
+  @Prop({ required: true }) reason!: string;
+  @Prop({ required: true }) requestedAt!: Date;
+}
+
 const options: SchemaOptions = {
   collection: 'orders',
   versionKey: false,
@@ -55,6 +60,7 @@ export class Order {
 
   @Prop() couponCode?: string;
   @Prop() notes?: string;
+  @Prop({ type: CancellationRequest }) cancellationRequest?: CancellationRequest;
 
   @Prop() createdAt?: Date;
   @Prop() updatedAt?: Date;

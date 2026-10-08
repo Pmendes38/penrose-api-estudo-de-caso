@@ -40,6 +40,14 @@ export class OrdersRepository {
     return this.orderModel.create(doc);
   }
 
+  requestCancellation(id: string, customerId: string, reason: string) {
+    return this.orderModel.findOneAndUpdate(
+      { id, customerId, status: { $in: [OrderStatus.PENDING, OrderStatus.PROCESSING, OrderStatus.PAID] }, cancellationRequest: { $exists: false } },
+      { $set: { cancellationRequest: { reason, requestedAt: new Date() } } },
+      { new: true },
+    ).lean().exec();
+  }
+
   updateStatus(id: string, status: OrderStatus, historyEntry: { status: OrderStatus; at: Date; note?: string; changedBy?: string }) {
     return this.orderModel
       .findOneAndUpdate(
