@@ -61,7 +61,8 @@ export class PaymentsService {
         subtotal: draft.totals.itemsSubtotal, shippingTotal: draft.totals.shippingTotal,
         discountTotal: draft.totals.discountTotal, grandTotal: draft.totals.grandTotal,
         couponCode: draft.coupons[0], notes: 'DEMONSTRAÇÃO — sem cobrança e sem envio real.',
-      }, draft.id);
+        shipping: { ...draft.shipping, provider: 'DEMO' }, shippingAddress: draft.shippingAddress,
+      } as any, draft.id);
     }
     if (order.customerId !== customerId) throw new ForbiddenException();
     return this.repo.getOrCreateDemo({

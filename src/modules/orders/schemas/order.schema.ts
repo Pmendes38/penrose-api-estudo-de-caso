@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaOptions } from 'mongoose';
 import { OrderStatus } from '../enums/order-status.enum';
+import { PRODUCTION_STAGES, ProductionStage } from '../dto/update-production.dto';
 
 export type OrderDocument = HydratedDocument<Order>;
 
@@ -22,6 +23,12 @@ class StatusHistory {
 class CancellationRequest {
   @Prop({ required: true }) reason!: string;
   @Prop({ required: true }) requestedAt!: Date;
+}
+
+class ProductionHistory {
+  @Prop({ enum: PRODUCTION_STAGES, required: true }) stage!: ProductionStage;
+  @Prop({ required: true }) at!: Date;
+  @Prop({ required: true }) changedBy!: string;
 }
 
 const options: SchemaOptions = {
@@ -61,6 +68,10 @@ export class Order {
   @Prop() couponCode?: string;
   @Prop() notes?: string;
   @Prop({ type: CancellationRequest }) cancellationRequest?: CancellationRequest;
+  @Prop({ enum: PRODUCTION_STAGES }) productionStage?: ProductionStage;
+  @Prop({ type: [ProductionHistory], default: [] }) productionHistory?: ProductionHistory[];
+  @Prop({ type: Object }) shipping?: Record<string, any>;
+  @Prop({ type: Object }) shippingAddress?: Record<string, any>;
 
   @Prop() createdAt?: Date;
   @Prop() updatedAt?: Date;

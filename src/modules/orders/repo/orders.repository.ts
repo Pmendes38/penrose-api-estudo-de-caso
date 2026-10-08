@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Order, OrderDocument } from '../schemas/order.schema';
 import { Model } from 'mongoose';
 import { OrderStatus } from '../enums/order-status.enum';
+import { ProductionStage } from '../dto/update-production.dto';
 
 @Injectable()
 export class OrdersRepository {
@@ -18,6 +19,19 @@ export class OrdersRepository {
 
   findById(id: string) {
     return this.orderModel.findOne({ id }).lean().exec();
+  }
+
+  listProduction() {
+    // ponytail: active O.S. only; paginate the board when the production queue outgrows one response.
+    return this.orderModel.find({ status: OrderStatus.PAID, productionStage: { $exists: true } }).sort({ updatedAt: -1 }).lean().exec();
+  }
+
+  updateProduction(id: string, previous: ProductionStage | undefined, stage: ProductionStage, changedBy: string) {
+    return this.orderModel.findOneAndUpdate(
+      { id, status: OrderStatus.PAID, productionStage: previous ?? { $exists: false } },
+      { $set: { productionStage: stage }, $push: { productionHistory: { stage, at: new Date(), changedBy } } },
+      { new: true },
+    ).lean().exec();
   }
 
   findByCheckoutDraftId(checkoutDraftId: string) {

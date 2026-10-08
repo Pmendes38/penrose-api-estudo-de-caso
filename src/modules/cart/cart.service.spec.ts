@@ -51,4 +51,12 @@ describe('CartService pricing and stock', () => {
     const updated = await service.updateItem('cart-1', 1, added.items[0].id, { variant: { size: '40cm' } });
     expect(updated.items[0].unitPrice).toBe(320000);
   });
+
+  it('keeps the delivery address and identifies demo shipping without requiring an invoice', async () => {
+    const { service, cart } = setup();
+    Object.assign(cart, { shippingQuotes: { expiresAt: Date.now() + 60000, postalCode: '72850180', quotes: [{ serviceCode: 'demo', label: 'Entrega simulada', amount: 0, days: 5, source: 'demo' }] } });
+    const selected = await service.selectShipping('cart-1', 1, { serviceCode: 'demo', address: { endereco: 'Rua Demonstração', numero: '10' } });
+    expect(selected.shippingAddress).toEqual(expect.objectContaining({ postalCode: '72850180', endereco: 'Rua Demonstração', numero: '10' }));
+    expect(selected.shipping?.label).toBe('Entrega simulada');
+  });
 });

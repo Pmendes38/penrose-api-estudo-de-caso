@@ -1,5 +1,5 @@
 import {
-  Injectable, BadRequestException, InternalServerErrorException, NotFoundException, ForbiddenException, Logger,
+  Injectable, BadRequestException, InternalServerErrorException, NotFoundException, ForbiddenException, ConflictException, Logger,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { OrdersRepository } from './repo/orders.repository';
@@ -7,6 +7,7 @@ import { CountersRepository } from './repo/counters.repository';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './enums/order-status.enum';
+import { PRODUCTION_STAGES, ProductionStage } from './dto/update-production.dto';
 
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PENDING]:     [OrderStatus.PROCESSING, OrderStatus.PAID, OrderStatus.CANCELED],
@@ -71,6 +72,8 @@ export class OrdersService {
       grandTotal: dto.grandTotal,
       couponCode: dto.couponCode,
       notes: dto.notes,
+      shipping: dto.shipping,
+      shippingAddress: dto.shippingAddress,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -120,6 +123,22 @@ export class OrdersService {
     if (current.cancellationRequest) return current;
     const updated = await this.ordersRepo.requestCancellation(id, customerId, reason.trim());
     if (!updated) throw new BadRequestException('O pedido mudou. Atualize a página antes de tentar novamente');
+    return updated;
+  }
+
+  listProduction() { return this.ordersRepo.listProduction(); }
+
+  async updateProduction(id: string, stage: ProductionStage, changedBy: string) {
+    if (!PRODUCTION_STAGES.includes(stage)) throw new BadRequestException('Etapa inválida');
+    const current = await this.ordersRepo.findById(id);
+    if (!current) throw new NotFoundException('Pedido não encontrado');
+    if (current.status !== OrderStatus.PAID) throw new ForbiddenException('A produção exige pagamento aprovado');
+    if (current.productionStage === stage) return current;
+    const from = current.productionStage ? PRODUCTION_STAGES.indexOf(current.productionStage) : -1;
+    const to = PRODUCTION_STAGES.indexOf(stage);
+    if ((from === -1 && to !== 0) || (from !== -1 && Math.abs(from - to) !== 1)) throw new BadRequestException('Mova uma etapa por vez');
+    const updated = await this.ordersRepo.updateProduction(id, current.productionStage, stage, changedBy);
+    if (!updated) throw new ConflictException('O pedido mudou. Atualize o quadro antes de tentar novamente');
     return updated;
   }
 

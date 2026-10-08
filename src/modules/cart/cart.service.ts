@@ -501,6 +501,7 @@ export class CartService {
     // Atualiza/normaliza shippingAddress (mantém dados do usuário)
     c.shippingAddress = {
       ...(c.shippingAddress ?? {}),
+      ...(dto.address ?? {}),
       postalCode: toPostal,
     };
 

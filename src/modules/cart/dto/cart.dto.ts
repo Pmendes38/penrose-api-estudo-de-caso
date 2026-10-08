@@ -65,9 +65,8 @@ export class ShippingSelectTagDto {
 }
 
 export class ShippingSelectDto {
-  address(arg0: string, expected: number | null, serviceCode: string, address: any) {
-    throw new Error('Method not implemented.');
-  }
+  @IsOptional() @IsObject()
+  address?: Record<string, any>;
   @IsString()
   serviceCode!: string;
 

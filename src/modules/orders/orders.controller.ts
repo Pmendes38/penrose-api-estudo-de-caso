@@ -8,11 +8,24 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus } from './enums/order-status.enum';
 import { RequestCancellationDto } from './dto/request-cancellation.dto';
+import { UpdateProductionDto } from './dto/update-production.dto';
 
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Get('production')
+  production() { return this.ordersService.listProduction(); }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Put('admin/:id/production')
+  updateProduction(@Param('id') id: string, @Body() dto: UpdateProductionDto, @Req() req: any) {
+    return this.ordersService.updateProduction(id, dto.stage, req.user.id);
+  }
 
   // Admin
   @ApiBearerAuth('bearer')

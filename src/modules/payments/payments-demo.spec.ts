@@ -21,6 +21,7 @@ describe('Isolated demonstration checkout', () => {
     const { service, orders, provider } = setup();
     const payment = await service.createDemoCheckout(input, 'customer', 'cart');
     expect(payment.amount).toBe(181000);
+    expect(orders.createOrder).toHaveBeenCalledWith(expect.objectContaining({ shipping: expect.objectContaining({ provider: 'DEMO' }) }), 'draft');
     expect(orders.createOrder).toHaveBeenCalledWith(expect.objectContaining({ customerId: 'customer', grandTotal: 181000 }), 'draft');
     expect(provider.ensureCustomer).not.toHaveBeenCalled();
     expect(provider.createPayment).not.toHaveBeenCalled();

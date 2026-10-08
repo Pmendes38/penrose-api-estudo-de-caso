@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsNumber, IsObject, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateOrderItemDto {
@@ -29,6 +29,11 @@ export class CreateOrderItemDto {
 }
 
 export class CreateOrderDto {
+  @IsOptional() @IsObject()
+  shipping?: Record<string, any>;
+
+  @IsOptional() @IsObject()
+  shippingAddress?: Record<string, any>;
   
   @ApiProperty() 
   @IsUUID() 
