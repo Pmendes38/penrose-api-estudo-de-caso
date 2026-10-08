@@ -1,5 +1,5 @@
 import {
-  Injectable, BadRequestException, InternalServerErrorException, NotFoundException, ForbiddenException,
+  Injectable, BadRequestException, InternalServerErrorException, NotFoundException, ForbiddenException, Logger,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { OrdersRepository } from './repo/orders.repository';
@@ -20,6 +20,7 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
   constructor(
     private readonly ordersRepo: OrdersRepository,
     private readonly countersRepo: CountersRepository,
@@ -78,6 +79,7 @@ export class OrdersService {
       const created = await this.ordersRepo.create(doc as any);
       return created.toJSON();
     } catch (error: any) {
+      this.logger.error(JSON.stringify({ type: error?.name, code: error?.code, fields: Object.keys(error?.errors ?? {}) }));
       if (error?.code === 11000 && checkoutDraftId) {
         const existing = await this.ordersRepo.findByCheckoutDraftId(checkoutDraftId);
         if (existing) return existing;
