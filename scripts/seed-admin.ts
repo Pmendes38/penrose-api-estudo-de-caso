@@ -22,7 +22,7 @@ function arg(name: string, fallback?: string) {
 }
 
 const emailArg = arg('email', 'contato@example.com');
-const passwordArg = arg('password', 'CONFIGURE_LOCAL_PASSWORD'); // >= 8 chars
+const passwordArg = arg('password'); // A senha local deve ser fornecida, nunca presumida.
 const nameArg = arg('name', 'Administrador');
 const force = process.argv.includes('--force') || process.argv.includes('-f');
 
